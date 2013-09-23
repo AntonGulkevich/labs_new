@@ -1,0 +1,14 @@
+     1 00000000 50                      push ax
+     2 00000001 53                      push bx
+     3 00000002 06                      push es
+     4 00000003 0E                      push cs
+     5 00000004 1F                      pop ds
+     6 00000005 17                      pop ss
+     7 00000006 59                      pop cx
+     8 00000007 5A                      pop dx
+     9 00000008 01C8                    add ax, cx
+    10 0000000A 01D8                    add ax, bx
+    11 0000000C 01D0                    add ax, dx
+    12 0000000E 01D3                    add bx, dx
+    13 00000010 01C1                    add cx, ax
+    14 00000012 01C2                    add dx, ax

@@ -1,0 +1,14 @@
+push ax
+push bx
+push es
+push cs
+pop ds
+pop ss
+pop cx
+pop dx
+add ax, cx
+add ax, bx
+add ax, dx
+add bx, dx
+add cx, ax
+add dx, ax
