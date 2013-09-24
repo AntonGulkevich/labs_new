@@ -16,7 +16,8 @@ int main()
     
     addr.sin_family = AF_INET;
     addr.sin_port = htons(3425);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    // addr.sin_addr.s_addr = htonl("192.168.1.3");
+    inet_aton("192.168.1.2", &(addr.sin_addr));
     if(bind(listener, (struct sockaddr *)&addr, sizeof(addr)) < 0)
     {
         perror("bind");
