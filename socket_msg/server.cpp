@@ -1,49 +1,49 @@
 #include "server.h"
 
-int main()
-{
-    int sock, listener;
-    struct sockaddr_in addr;
-    char buf[1024];
-    int bytes_read;
-
-    listener = socket(AF_INET, SOCK_STREAM, 0);
-    if(listener < 0)
-    {
-        perror("socket");
-        exit(1);
-    }
+using namespace std;
+int main() {
+    int listener;
+    int bufsize = 1024;
+    char buffer[bufsize];
     
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(3425);
-    // addr.sin_addr.s_addr = htonl("192.168.1.3");
-    inet_aton("192.168.1.2", &(addr.sin_addr));
-    if(bind(listener, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-    {
-        perror("bind");
-        exit(2);
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    address.sin_port = htons(55555);
+
+    listener = socket(AF_INET,SOCK_STREAM,0);
+    if (listener <= 0) {
+        cout << "Could not create socket!" << endl;
+        return 0;
+    } 
+    cout << "Socket was created!" << endl;
+
+    int bind_status = bind(listener,(struct sockaddr *)&address, sizeof(address));
+    if (bind_status != 0) {
+        cout << "Could not bind socket!" << endl;
+        return 0;
+    }
+    cout << "Socket was binded!" << endl;
+    listen(listener, 1); // 1 - queue size
+
+    int sock = accept(listener,NULL, NULL);
+
+    if (sock > 0) {
+        cout << "Client was connected!" << endl;
     }
 
-    listen(listener, 1);
-    
-    while(1)
-    {
-        sock = accept(listener, NULL, NULL);
-        if(sock < 0)
-        {
-            perror("accept");
-            exit(3);
+    while (1) {
+        recv(sock, buffer, bufsize, 0);
+        cout << "Client: " << buffer << endl;
+        cout << "Server: ";
+        cin >> buffer;
+        if (!strcmp(buffer, "quit")) {
+            send(sock, "Good bye", bufsize, 0);
+            break;
         }
-
-        while(1)
-        {
-            bytes_read = recv(sock, buf, 1024, 0);
-            if(bytes_read <= 0) break;
-            send(sock, buf, bytes_read, 0);
-        }
-    
-        shutdown(sock,2);
+        send(sock, buffer, bufsize, 0);
     }
-    
+    close(sock);
+    close(listener);
     return 0;
 }

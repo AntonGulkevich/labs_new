@@ -1,34 +1,41 @@
 #include "client.h"
 
-char message[] = "Hello there!\n";
-char buf[sizeof(message)];
-
-int main()
-{
+using namespace std;
+int main() {
     int sock;
-    struct sockaddr_in addr;
+    int bufsize = 1024;
+    char buffer[bufsize];
 
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    if(sock < 0)
-    {
-        perror("socket");
-        exit(1);
-    }
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_port = htons(55555);
+    address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(3425); // или любой другой порт...
-    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    if(connect(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-    {
-        perror("connect");
-        exit(2);
-    }
-
-    send(sock, message, sizeof(message), 0);
-    recv(sock, buf, sizeof(message), 0);
+    sock = socket(AF_INET,SOCK_STREAM,0);
+    if (sock <= 0) {
+        cout << "Could not create socket!" << endl;
+        return 0;
+    } 
+    cout << "Socket was created!" << endl;
     
-    printf(buf);
-    shutdown(sock,2);
+    int connect_status = connect(sock,(struct sockaddr *)&address, sizeof(address));
+    if (connect_status < 0) {
+         cout << "Could not connect!" << endl;
+         return 0;
+    }    
+    cout << "The connection was accepted with the server..." << endl;
 
-    return 0;
+    while (1) {
+        cout << "Client: ";
+        cin >> buffer;
+        if (!strcmp(buffer, "quit")) {
+            send(sock, "Good bye", bufsize, 0);
+            break;
+        }
+        send(sock, buffer, bufsize, 0);
+        recv(sock, buffer, bufsize, 0);
+        cout << "Server: " << buffer << endl;
+    }
+
+    close(sock);
 }
