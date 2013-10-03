@@ -1,4 +1,4 @@
-#include "server.h"
+#include "tcpserver.h"
 
 using namespace std;
 int main(int argc, char **argv) {
@@ -31,10 +31,8 @@ int main(int argc, char **argv) {
     listen(listener, 1); // 1 - queue size
 
     int sock = accept(listener,NULL, NULL);
-
-    if (sock > 0) {
+    if (sock > 0) 
         cout << "Client was connected!" << endl;
-    }
 
     int bytes_recieved;
     int bytes_send;
