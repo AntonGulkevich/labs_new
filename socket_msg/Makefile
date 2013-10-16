@@ -1,6 +1,8 @@
 CC=g++
 CFLAGS=-Wall
-all: tcpclient tcpserver udpsender udpreciever
+all: tcp udp
+tcp: tcpclient tcpserver
+udp: udpsender	udpreciever
 tcpclient: tcpclient.o
 tcpclient.o: tcpclient.cpp
 	$(CC) $(CFLAGS) -c tcpclient.cpp -o tcpclient.o

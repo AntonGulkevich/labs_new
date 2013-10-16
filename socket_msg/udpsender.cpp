@@ -2,8 +2,6 @@
 using namespace std;
 int main(int argc, char **argv) {
     int sock;
-    int bufsize = 1024;
-    char buffer[bufsize];
 
     struct sockaddr_in address;
     address.sin_family = AF_INET;
@@ -20,11 +18,12 @@ int main(int argc, char **argv) {
     } 
     cout << "Socket was created!" << endl;
 
-	char msg1[] = "test!!\n";
-    sendto(sock, msg1, sizeof(msg1), 0, 
+	char msg[] = "test!!\n";
+
+    sendto(sock, msg, sizeof(msg), 0, 
     	(struct sockaddr *)&address, sizeof(address));
 
-    
+    close(sock);
 
     return 0;
 }

@@ -27,11 +27,14 @@ int main(int argc, char **argv) {
     }
 
     int bytes_read;
-    while (strcmp(buffer, "close")) {
+    while (1) {
         bytes_read = recvfrom(sock, buffer, bufsize, 0, 0,0);
-        cout << buffer;
+        if (bytes_read > 0)
+            cout << buffer;
+        if (!strcmp(buffer, "close"))  
+            break;
+
     }
-    
 
     return 0;
 }
