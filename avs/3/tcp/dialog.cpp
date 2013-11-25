@@ -4,22 +4,10 @@
 /* public ***********************************************/
 Dialog::Dialog(QWidget *parent) :
 QDialog(parent),
-ui_(new Ui::Dialog) {
+  ui_(new Ui::Dialog), Server_(0), Client_(0) {
     LOG << "Dialog init.";
 
     ui_->setupUi(this);
-    tcpServer_ = new Server();
-    tcpClient_ = new Client();
-
-    connect(tcpServer_, SIGNAL(statusChanged(Server::estatus_, Server::emode_)),
-            this, SLOT(setSendButton(Server::estatus_, Server::emode_)));
-    connect(tcpClient_, SIGNAL(statusChanged(Client::estatus_, Client::emode_)),
-            this, SLOT(setRecieveButton(Client::estatus_, Client::emode_)));
-    connect(tcpServer_, SIGNAL(sent(int)),
-            this, SLOT(setSentBytes(int)));
-    connect(tcpClient_, SIGNAL(recieved(int)),
-            this, SLOT(setRecievedBytes(int)));
-
 
     QNetworkInterface *inter = new QNetworkInterface();
     QList<QHostAddress> list;
@@ -31,142 +19,161 @@ ui_(new Ui::Dialog) {
             hostname = tmp.toString();
     }
 
+//    ui_->serverIPEdit->setText(hostname);
+    ui_->serverIPEdit->setText("127.0.0.1");
+    ui_->serverPortEdit->setText("11111");
+    ui_->serverMsgEdit->setText("Hello");
+//    ui_->serverFileEdit->setText("/home/dn/yabss.crt");
 
-    ui_->sendIPEdit->setText(hostname);
-    ui_->sendPortEdit->setText("11111");
-    ui_->sendFileEdit->setText("/home/dn/yabss.crt");
-
-    ui_->recieveIPEdit->setText("127.0.0.1");
-    ui_->recievePortEdit->setText("11111");
-    ui_->recieveFileEdit->setText("/tmp/");
+    ui_->clientIPEdit->setText("127.0.0.1");
+    ui_->clientPortEdit->setText("11111");
+    ui_->clientFileWidget->hide();
+//    ui_->recieveFileEdit->setText("/tmp/");
 
 }
 
 Dialog::~Dialog() {
     LOG << "Dialog destruct.";
-    delete tcpServer_;
-    delete tcpClient_;
+    if (Server_)
+        delete Server_;
+
+    if (Client_)
+        delete Client_;
+
     delete ui_;
 }
 
 /* private slots ***********************************************/
 // server side
 
-void Dialog::on_sendFileTB_clicked() {
-    LOG << "sendFileTB was clicked!";
+//void Dialog::on_sendFileTB_clicked() {
+//    LOG << "sendFileTB was clicked!";
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-            "/home/dn");
-    if (fileName.isEmpty())
-        return;
-    ui_->sendFileEdit->setText((fileName));
-}
+//    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+//            "/home/dn");
+//    if (fileName.isEmpty())
+//        return;
+//    ui_->sendFileEdit->setText((fileName));
+//}
 
-void Dialog::on_sendFileButton_clicked() {
-    LOG << "sendFileButton was clicked!";
 
-    QString hostname = ui_->sendIPEdit->text();
-    qint16 port = ui_->sendPortEdit->text().toInt();
-    QString filename = ui_->sendFileEdit->text();
+void Dialog::on_serverButton_clicked() {
+    LOG << "serverButton was clicked!";
+    QString proto = ui_-> serverProtoCB->currentText();
+    QString hostname = ui_->serverIPEdit->text();
+    quint16 port = ui_->serverPortEdit->text().toInt();
+    QString message = ui_->serverMsgEdit->text();
+    QString directory = ui_->serverDirEdit->text();
 
-    if (tcpServer_->status() == Server::stopped) {
-        tcpServer_->start(hostname, port, filename);
-    } else {
-        tcpServer_->stop();
+    if (Server_ == 0) {
+        if (proto == "TCP") {
+            Server_ = new TCPServer(hostname, port, directory, message);
+
+            connect(Server_, SIGNAL(statusChanged(bool)),
+                    this, SLOT(setServerUI(bool)));
+            connect(Server_, SIGNAL(bytesSent(int)),
+                    this, SLOT(setSentBytes(int)));
+        }
+
+        if (proto == "UDP") {
+
+        }
     }
 
-}
-
-void Dialog::on_sendButton_clicked() {
-    LOG << "sendButton was clicked!";
-
-    QString hostname = ui_->sendIPEdit->text();
-    qint16 port = ui_->sendPortEdit->text().toInt();
-
-    if (tcpServer_->status() == Server::stopped) {
-        tcpServer_->start(hostname, port);
+    if (!Server_->isRun()) {
+        Server_->start();
+        ui_->serverCommonWidget->setDisabled(true);
     } else {
-        tcpServer_->stop();
+        Server_->stop();
+        ui_->serverCommonWidget->setDisabled(false);
+        delete Server_;
+        Server_ = 0;
     }
 }
 
-void Dialog::setSendButton(Server::estatus_ status, Server::emode_ mode) {
-    LOG << "setSendButton.";
-    QString strStatus = "";
-    if (status == Server::stopped)
-        strStatus = "Start";
-    else
-        strStatus = "Stop";
 
-    if (mode == Server::message)
-        ui_->sendButton->setText(strStatus);
-    else
-        ui_->sendFileButton->setText(strStatus);
+void Dialog::setServerUI(bool status) {
+    LOG << "setServerUI.";
+    ui_->serverButton->setText((status) ? "Stop" : "Start");
 }
 
 void Dialog::setSentBytes(int bytes) {
     LOG << "setSentBytes";
-
-    ui_->sentBytesLabel->setText("Bytes sent: " + QString::number(bytes));
+    ui_->serverSentBytesValue->setText("Bytes sent: " + QString::number(bytes));
 }
 
 
 // client side
 
-void Dialog::on_recieveFileTB_clicked() {
-    LOG << "recieveFileTB was clicked!";
+//void Dialog::on_recieveFileTB_clicked() {
+//    LOG << "recieveFileTB was clicked!";
 
-    QString folderName = QFileDialog::getExistingDirectory(this, tr("Recieve Folder"),
-            "/home/dn");
-    if (folderName.isEmpty())
-        return;
-    ui_->recieveFileEdit->setText(folderName);
-}
+//    QString folderName = QFileDialog::getExistingDirectory(this, tr("Recieve Folder"),
+//            "/home/dn");
+//    if (folderName.isEmpty())
+//        return;
+//    ui_->recieveFileEdit->setText(folderName);
+//}
 
-void Dialog::on_recieveFileButton_clicked() {
-    LOG << "recieveFileButton was clicked!";
 
-    QString hostname = ui_->recieveIPEdit->text();
-    qint16 port = ui_->recievePortEdit->text().toInt();
-    QString filename = ui_->recieveFileEdit->text();
+void Dialog::on_clientButton_clicked() {
+    LOG << "clientButton was clicked!";
+    QString proto = ui_->clientProtoCB->currentText();
+    QString hostname = ui_-> clientIPEdit->text();
+    quint16 port = ui_->clientPortEdit->text().toInt();
+    QString filename = ui_->clientFileEdit->text();
 
-    if (tcpClient_->status() == Client::stopped) {
-        tcpClient_->start(hostname, port, filename);
+    if (Client_ == 0) {
+        if (proto == "TCP") {
+            Client_ = new TCPClient(hostname, port);
+
+                connect(Client_, SIGNAL(statusChanged(bool)),
+                        this, SLOT(setClientUI(bool)));
+                connect(Client_, SIGNAL(bytesRecieved(int)),
+                        this, SLOT(setRecievedBytes(int)));
+                connect(Client_, SIGNAL(msgRecieved(QString)),
+                        this, SLOT(setRecievedMsg(QString)));
+               Client_->start();
+        }
+
+        if (proto == "UDP") {
+
+        }
     } else {
-        tcpClient_->stop();
+        if (Client_->isRun())  {
+            Client_->stop();
+            ui_->clientCommonWidget->setDisabled(false);
+            delete Client_;
+            Client_ = 0;
+        }
     }
 
 }
 
-void Dialog::on_recieveButton_clicked() {
-    LOG << "recieveButton was clicked!";
 
-    QString hostname = ui_->recieveIPEdit->text();
-    qint16 port = ui_->recievePortEdit->text().toInt();
-
-    if (tcpClient_->status() == Client::stopped) {
-        tcpClient_->start(hostname, port);
+void Dialog::on_clientModeCB_currentIndexChanged(const QString &string) {
+    LOG << "clientMode changed";
+    if (string == "Message") {
+        ui_->clientMsgWidget->show();
+        ui_->clientFileWidget->hide();
     } else {
-        tcpClient_->stop();
+        ui_->clientMsgWidget->hide();
+        ui_->clientFileWidget->show();
     }
 }
 
-void Dialog::setRecieveButton(Client::estatus_ status, Client::emode_ mode) {
-    LOG << "setRecieveButton.";
-    QString strStatus = "";
-    if (status == Client::stopped)
-        strStatus = "Start";
-    else
-        strStatus = "Stop";
-
-    if (mode == Client::message)
-        ui_->recieveButton->setText(strStatus);
-    else
-        ui_->recieveFileButton->setText(strStatus);
+void Dialog::setClientUI(bool status) {
+    LOG << "setClientButton().";
+     ui_->clientButton->setText((status) ? "Stop" : "Start");
+     ui_->clientCommonWidget->setDisabled(status);
 }
 
 void Dialog::setRecievedBytes(int bytes) {
-    LOG << "setRecievedBytes";
+    LOG << "setRecievedBytes().";
+    ui_->clientRecievedBytesValue->setText("Bytes recieved: " + QString::number(bytes));
+}
 
-    ui_->recievedBytesLabel->setText("Bytes recieved: " + QString::number(bytes));
+void Dialog::setRecievedMsg(QString msg) {
+    LOG << "setRecievedMsg().";
+    ui_->clientMsgEdit->append(msg);
 }

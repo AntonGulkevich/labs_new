@@ -1,12 +1,10 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include <QStringList>
-#include <QTcpServer>
-#include <QTcpSocket>
-#include <QDebug>
-#include <QTimer>
-#include <QFile>
+#include <QString>
+#include <QAbstractSocket>
+
+#include "const.h"
 
 #undef LOG
 #define LOG qDebug() << "Server: "
@@ -15,42 +13,40 @@ class Server : public QObject {
 
     Q_OBJECT
 public:
-    enum estatus_ {
-        started, stopped
-    };
+    Server(QString hostname, qint16 port, QString directory, QString msg);
+    virtual ~Server();
 
-    enum emode_ {
-        file, message
-    };
+    virtual bool isRun() const = 0;
+    virtual void start() = 0;
+    virtual void stop() = 0;
 
-    Server();
-    ~Server();
-    estatus_ status() const;
-    emode_ mode() const;
-    bool isRun();
-    void start(QString, qint16, QString filename = QString::null);
-    void stop();
+protected:
+    QString hostname() const;
+    void hostname(QString hostname);
+    quint16 port() const;
+    void port(quint16 port);
+    QString directory() const;
+    void directory(QString directory);
+    QString msg() const;
+    void msg(QString msg);
+
 private:
-
     QString hostname_;
     qint16 port_;
-    QString filename_;
-    QTcpServer *tcpServer_;
-    QTcpSocket *tcpSocket_;
-    estatus_ status_;
-    emode_ mode_;
-    QTimer *timer_;
-    QFile *file_;
+    QString directory_;
+    QString msg_;
+
+    virtual void sendMsg(QAbstractSocket *socket) = 0;
+    virtual void sendFile(QAbstractSocket *socket, const QString filename) = 0;
 
 private slots:
-    void send();
-    void sendFile();
-    void startSocket();
-    void stopSocket();
+    virtual void startSocket() = 0;
+    virtual void readClient() = 0;
 
 signals:
-    void statusChanged(Server::estatus_, Server::emode_);
-    void sent(int);
+    void statusChanged(bool status);
+    void bytesSent(int bytes);
+
 };
 
 #endif // SERVER_H

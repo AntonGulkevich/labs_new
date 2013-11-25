@@ -4,8 +4,10 @@
 #include <QDialog>
 #include <QFileDialog>
 #include <QNetworkInterface>
-#include "server.h"
-#include "client.h"
+#include "tcpserver.h"
+#include "tcpclient.h"
+#include "udpserver.h"
+#include "udpclient.h"
 
 #undef LOG
 #define LOG qDebug() << "Dialog: "
@@ -23,27 +25,24 @@ public:
 
 private slots:
     // server side
-    void on_sendFileTB_clicked();
-    void on_sendFileButton_clicked();
-    void on_sendButton_clicked();
-    void setSendButton(Server::estatus_, Server::emode_);
-    void setSentBytes(int);
+//    void on_sendFileTB_clicked();
+    void on_serverButton_clicked();
+    void setServerUI(bool status);
+    void setSentBytes(int bytes);
 
     // client side
-    void on_recieveFileTB_clicked();
-    void on_recieveFileButton_clicked();
-    void on_recieveButton_clicked();
-    void setRecieveButton(Client::estatus_, Client::emode_);
-    void setRecievedBytes(int);
+//    void on_recieveFileTB_clicked();
+    void on_clientButton_clicked();
+    void on_clientModeCB_currentIndexChanged(const QString &string);
+    void setClientUI(bool status);
+    void setRecievedBytes(int bytes);
+    void setRecievedMsg(QString msg);
 
 private:
 
     Ui::Dialog *ui_;
-    Server *tcpServer_;
-    Client *tcpClient_;
-
-    QString current_;
-    quint16 blockSize_;
+    Server *Server_;
+    Client *Client_;
 
 };
 

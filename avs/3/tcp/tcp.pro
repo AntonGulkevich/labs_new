@@ -15,10 +15,19 @@ TEMPLATE = app
 SOURCES += main.cpp\
         dialog.cpp \
     server.cpp \
-    client.cpp
+    client.cpp \
+    tcpserver.cpp \
+    udpserver.cpp \
+    tcpclient.cpp \
+    udpclient.cpp
 
 HEADERS  += dialog.h \
     server.h \
-    client.h
+    client.h \
+    tcpserver.h \
+    udpserver.h \
+    tcpclient.h \
+    udpclient.h \
+    const.h
 
 FORMS    += dialog.ui
