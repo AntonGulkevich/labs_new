@@ -48,7 +48,7 @@ private slots:
     virtual void socketConnected() = 0;
     virtual void socketError(QAbstractSocket::SocketError error) = 0;
     virtual void readServer() = 0;
-
+    // messages
     virtual void sendM_INIT() = 0;
 //    virtual void readMsg() = 0;
 //    virtual void readFile() = 0;

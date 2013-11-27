@@ -42,6 +42,8 @@ private:
 private slots:
     virtual void startSocket() = 0;
     virtual void readClient() = 0;
+    // messages
+    virtual void sendM_DATA(QAbstractSocket *socket) = 0;
 
 signals:
     void statusChanged(bool status);

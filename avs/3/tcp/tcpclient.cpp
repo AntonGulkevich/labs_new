@@ -141,6 +141,8 @@ void TCPClient::readServer() {
     }
 }
 
+// messages
+
 void TCPClient::sendM_INIT() {
     QByteArray data;
     QDataStream out(&data, QIODevice::WriteOnly);

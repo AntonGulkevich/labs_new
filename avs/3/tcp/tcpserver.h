@@ -31,6 +31,8 @@ private:
 private slots:
     void startSocket();
     void readClient();
+    // messages
+    void sendM_DATA(QAbstractSocket *socket);
 };
 
 #endif // TCPSERVER_H

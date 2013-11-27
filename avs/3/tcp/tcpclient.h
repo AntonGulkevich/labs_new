@@ -28,7 +28,9 @@ private slots:
     void socketError(QAbstractSocket::SocketError error);
     void readServer();
 
+    // messages
     void sendM_INIT();
+
 };
 
 #endif // TCPCLIENT_H

@@ -41,22 +41,7 @@ void TCPServer::stop() {
 // private
 void TCPServer::sendMsg(QAbstractSocket *socket) {
     LOG << "sendMsg()";
-    QTcpSocket *tcpSocket = dynamic_cast<QTcpSocket *>(socket);
-
-    QByteArray data;
-    QDataStream out(&data, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_1);
-
-    out << quint16(0); // offset
-    out << quint8(t_msg::TCP_M_DATA); // msg_type field
-
-    out << quint16(rand());
-    out << QString(msg());
-
-    out.device()->seek(0);
-    out << quint16(data.size() - sizeof(quint16)); // msg_length field
-
-    tcpSocket->write(data);
+    sendM_DATA(socket);
 }
 
 void TCPServer::sendFile(QAbstractSocket *socket, const QString filename) {
@@ -108,5 +93,21 @@ void TCPServer::readClient() {
     }
 }
 
+// messages
+void TCPServer::sendM_DATA(QAbstractSocket *socket) {
+    QByteArray data;
+    QDataStream out(&data, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_1);
 
+    out << quint16(0); // offset
+    out << quint8(t_msg::TCP_M_DATA); // msg_type field
+
+    out << quint16(rand());
+    out << QString(msg());
+
+    out.device()->seek(0);
+    out << quint16(data.size() - sizeof(quint16)); // msg_length field
+
+    socket->write(data);
+}
 
