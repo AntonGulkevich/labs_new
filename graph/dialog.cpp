@@ -3,7 +3,7 @@
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
-    ui_(new Ui::Dialog), scene_(new QGraphicsScene(parent)), code_(new Code(QString::null))
+    ui_(new Ui::Dialog), code_(new Code(QString::null))
 {
     LOG << "Constructed!";
     ui_->setupUi(this);

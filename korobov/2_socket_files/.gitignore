@@ -1,0 +1,6 @@
+*.o
+tcpserver
+tcpclient
+udpsender
+udpreciever
+
