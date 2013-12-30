@@ -1,14 +1,14 @@
-#include "openmessage.h"
-#include "ui_openmessage.h"
+#include "readmessage.h"
+#include "ui_readmessage.h"
 
-OpenMessage::OpenMessage(Message *message, QWidget *parent) :
+ReadMessage::ReadMessage(Message *message, QWidget *parent) :
     QDialog(parent),
-    ui_(new Ui::OpenMessage), Message_(message)
+    ui_(new Ui::ReadMessage), Message_(message)
 {
     ui_->setupUi(this);
     ui_->toLE->setText(message->to());
     ui_->subjectLE->setText(message->subj());
-    ui_->timeLE->setText(message->time().toString());
+    ui_->timeLE->setText(message->datetime().toString());
     ui_->messageTE->setText(message->body());
 
     QString attach = "";
@@ -19,7 +19,7 @@ OpenMessage::OpenMessage(Message *message, QWidget *parent) :
 
 }
 
-OpenMessage::~OpenMessage()
+ReadMessage::~ReadMessage()
 {
     qDebug() << "open message destructed";
     delete ui_;

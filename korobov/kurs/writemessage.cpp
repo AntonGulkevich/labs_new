@@ -1,10 +1,10 @@
-#include "newmessage.h"
-#include "ui_newmessage.h"
+#include "writemessage.h"
+#include "ui_writemessage.h"
 
 //public
-NewMessage::NewMessage(User *User, Storage< Message > *storage, QDialog *parent) :
+WriteMessage::WriteMessage(User *User, Storage< Message > *storage, QDialog *parent) :
     QDialog(parent),
-    ui_(new Ui::NewMessage), User_(User), smtpStorage_(storage)
+    ui_(new Ui::WriteMessage), User_(User), smtpStorage_(storage)
 {
     ui_->setupUi(this);
     ui_->toLE->setText("danil@seventest.ru");
@@ -12,12 +12,12 @@ NewMessage::NewMessage(User *User, Storage< Message > *storage, QDialog *parent)
     ui_->messageTE->setText("example message");
 }
 // public
-NewMessage::~NewMessage()
+WriteMessage::~WriteMessage()
 {
     delete ui_;
 }
 // private slots
-void NewMessage::on_browsePB_clicked()
+void WriteMessage::on_browsePB_clicked()
 {
     files_.clear();
 
@@ -35,19 +35,19 @@ void NewMessage::on_browsePB_clicked()
     ui_->attachLE->setText(fileListString);
 }
 // private slots
-void NewMessage::on_sendPB_clicked()
+void WriteMessage::on_sendPB_clicked()
 {
     SMTPClient client(User_->email(), User_->password(),
                       User_->smtpHost(), User_->smtpPort());
     bool sent = client.send(User_->email(), ui_->toLE->text(),
                             ui_->subjectLE->text(), ui_->messageTE->toPlainText(), files_);
 
-    QTime time = QTime::currentTime();
+    QDateTime datetime = QDateTime::currentDateTime();
 
     if (sent) {
         Message message(User_->email(), ui_->toLE->text(),
                         ui_->subjectLE->text(), ui_->messageTE->toPlainText(),
-                        files_, time);
+                        files_, datetime);
 
         smtpStorage_->add(message);
 
@@ -56,7 +56,7 @@ void NewMessage::on_sendPB_clicked()
 
 }
 // private slots
-void NewMessage::on_closePB_clicked()
+void WriteMessage::on_closePB_clicked()
 {
     close();
 }

@@ -3,7 +3,7 @@
 #include <QString>
 #include <QStringList>
 #include <QCryptographicHash>
-#include <QTime>
+#include <QDateTime>
 #include <QDebug>
 class Message
 {
@@ -11,7 +11,7 @@ public:
     Message();
     Message(const QString &from, const QString &to,
             const QString &subj, const QString &body,
-            const QStringList &files, QTime &time, bool read = true);
+            const QStringList &files, QDateTime &time, bool read = true);
     Message(const Message& message);
     ~Message();
 
@@ -20,7 +20,7 @@ public:
     QString subj() const;
     QString body() const;
     QStringList files() const;
-    QTime time() const;
+    QDateTime datetime() const;
     QString id() const;
     bool read() const;
     void read(bool read);
@@ -31,7 +31,7 @@ private:
     QString subj_;
     QString body_;
     QStringList files_;
-    QTime time_;
+    QDateTime datetime_;
     QString id_;
     bool read_;
 

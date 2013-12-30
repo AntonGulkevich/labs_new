@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OpenMessage</class>
- <widget class="QDialog" name="OpenMessage">
+ <class>ReadMessage</class>
+ <widget class="QDialog" name="ReadMessage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -147,7 +147,7 @@
   <connection>
    <sender>closePB_2</sender>
    <signal>clicked()</signal>
-   <receiver>OpenMessage</receiver>
+   <receiver>ReadMessage</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

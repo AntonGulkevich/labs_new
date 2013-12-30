@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     popHeader->resizeSections(QHeaderView::Stretch);
-    smtpHeader->resizeSections(QHeaderView::Stretch);
+//    smtpHeader->resizeSections(QHeaderView::Stretch);
 
     ui_->popTW->setColumnCount(4);
     ui_->popTW->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -28,8 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui_->smtpTW->setSelectionBehavior(QAbstractItemView::SelectRows);
 
 }
-
-
 
 // public
 MainWindow::~MainWindow()
@@ -81,7 +79,7 @@ void MainWindow::showRecord(QTableWidget *tableWidget, Message *message, int ind
     if (message->read() == false) attachLength->setFont(bold);
     tableWidget->setItem(index, 0, attachLength);
 
-    QTableWidgetItem *time = new QTableWidgetItem(message->time().toString());
+    QTableWidgetItem *time = new QTableWidgetItem(message->datetime().toString());
     time->setFlags(Qt::NoItemFlags | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     if (message->read() == false) time->setFont(bold);
     tableWidget->setItem(index, 1, time);
@@ -105,12 +103,12 @@ void MainWindow::showRecord(QTableWidget *tableWidget, Message *message, int ind
 }
 
 // private
-Message& MainWindow::parsePOP3Message(QString stringMessage)
+Message MainWindow::parsePOP3Message(QString stringMessage)
 {
     QString to = User_->email();
     QString from, subj, body;
     QStringList files;
-    QTime time;
+    QDateTime datetime;
     bool read;
 
     QStringList lines = stringMessage.split("\r\n");
@@ -127,8 +125,7 @@ Message& MainWindow::parsePOP3Message(QString stringMessage)
             QString tmp = line.section("Date: ", 1);
             tmp = tmp.section(",", 1).trimmed();
             tmp.chop(6);
-            QDateTime dt = QDateTime::fromString(tmp, "d MMM yyyy hh:mm:ss");
-            time = dt.time();
+            datetime = QDateTime::fromString(tmp, "d MMM yyyy hh:mm:ss");
         }
 
 
@@ -142,10 +139,11 @@ Message& MainWindow::parsePOP3Message(QString stringMessage)
 
 
 
-        qDebug() << to << " " << subj << " " << time;
+//        qDebug() << to << " " << subj << " " << time;
     }
-    Message newMessage(from, User_->email(), subj, "", QStringList(), time, false);
-    return newMessage;
+    Message readMessage(from, User_->email(), subj, "", QStringList(), datetime, false);
+    qDebug() << readMessage.id();
+    return readMessage;
 }
 
 // private slots
@@ -167,8 +165,8 @@ void MainWindow::loginDialog_finished(int code)
 // private slots
 void MainWindow::on_actionNew_Message_triggered()
 {
-    NewMessage *newMessage = new NewMessage(User_, smtpStorage_);
-    if (newMessage->exec() == QDialog::Accepted) {
+    WriteMessage *writeMessage = new WriteMessage(User_, smtpStorage_);
+    if (writeMessage->exec() == QDialog::Accepted) {
         showTable(ui_->smtpTW, smtpStorage_);
     }
 }
@@ -181,11 +179,13 @@ void MainWindow::on_actionGet_Mail_triggered()
     if (POP3.init()) {
         if (POP3.login()) {
             if (POP3.getMsgList(uIdList)) {
-                QString str = "";
+                QString message;
                 foreach (QString str, uIdList) {
 //                   POP3.getMessageTop(str, 10, top);
-                    POP3.getMessage(str, str);
-                    popStorage_->add(parsePOP3Message(str));
+                    POP3.getMessage(str, message);
+                    Message retr(parsePOP3Message(message));
+//                    qDebug() << retr.id();
+                    popStorage_->add(retr);
                 }
             }
         }
@@ -214,9 +214,19 @@ void MainWindow::on_smtpTW_doubleClicked(const QModelIndex &index)
 {
     int i = index.row();
     Message *m = &(smtpStorage_->getObject(i));
-    OpenMessage *openMessage = new OpenMessage(m, this);
-    if (openMessage->exec() == QDialog::Rejected) {
-        delete openMessage;
+    ReadMessage *readMessage = new ReadMessage(m, this);
+    if (readMessage->exec() == QDialog::Rejected) {
+        delete readMessage;
     }
 
+}
+
+void MainWindow::on_popTW_doubleClicked(const QModelIndex &index)
+{
+    int i = index.row();
+    Message *m = &(popStorage_->getObject(i));
+    ReadMessage *readMessage = new ReadMessage(m, this);
+    if (readMessage->exec() == QDialog::Rejected) {
+        delete readMessage;
+    }
 }

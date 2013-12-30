@@ -3,27 +3,27 @@
 Message::Message()
     : from_(QString::null), to_(QString::null),
       subj_(QString::null), body_(QString::null),
-      files_(QStringList()), time_(QTime()), read_(true)
+      files_(QStringList()), datetime_(QDateTime()), read_(true)
 {
 }
 
 // public
 Message::Message(const QString &from, const QString &to,
                  const QString &subj, const QString &body,
-                 const QStringList &files, QTime &time, bool read)
+                 const QStringList &files, QDateTime &datetime, bool read)
     : from_(from), to_(to),
       subj_(subj), body_(body),
-      files_(files), time_(time), read_(read)
+      files_(files), datetime_(datetime), read_(read)
 {
     id_ = QString( QCryptographicHash::hash(
-                       from_.toUtf8() + to_.toUtf8() + time_.toString().toUtf8(),
+                       from_.toUtf8() + to_.toUtf8() + datetime_.toString().toUtf8(),
                        QCryptographicHash::Md5).toHex() );
 }
 // public
 Message::Message(const Message& orig)
     : from_(orig.from_), to_(orig.to_),
       subj_(orig.subj_), body_(orig.body_),
-      files_(orig.files_), time_(orig.time_),
+      files_(orig.files_), datetime_(orig.datetime_),
       id_(orig.id_), read_(orig.read_)
 
 {
@@ -44,7 +44,7 @@ QString Message::body() const { return body_; }
 // public
 QStringList Message::files() const { return files_; }
 // public
-QTime Message::time() const { return time_; }
+QDateTime Message::datetime() const { return datetime_; }
 // public
 QString Message::id() const { return id_; }
 // public
@@ -57,7 +57,7 @@ QDataStream& operator<< (QDataStream& out, const Message& object)
 {
     out << object.from() << object.to()
         << object.subj() << object.body()
-        << object.files() << object.time()
+        << object.files() << object.datetime()
         << object.read();
     return out;
 }
@@ -69,9 +69,9 @@ QDataStream& operator>> (QDataStream& in, Message& object)
     QString from, to;
     QString subj, body;
     QStringList files;
-    QTime time;
+    QDateTime datetime;
     bool read;
-    in >> from >> to >> subj >> body >> files >> time >> read;
-    object = Message(from, to, subj, body, files, time, read);
+    in >> from >> to >> subj >> body >> files >> datetime >> read;
+    object = Message(from, to, subj, body, files, datetime, read);
     return in;
 }

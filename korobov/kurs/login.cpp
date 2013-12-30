@@ -21,6 +21,7 @@ Login::~Login()
 // public static
 bool Login::checkConnect(User *user)
 {
+    return true;
     // check POP3
     bool pop3 = false;
     POP3Client POP3(user->email(), user->password(),

@@ -16,26 +16,28 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     user.cpp \
     smtpclient.cpp \
-    newmessage.cpp \
     pop3client.cpp \
     newuser.cpp \
     login.cpp \
     message.cpp \
-    openmessage.cpp
+    messagewindow.cpp \
+    writemessage.cpp \
+    readmessage.cpp
 
 HEADERS  += mainwindow.h \
     user.h \
     smtpclient.h \
-    newmessage.h \
     pop3client.h \
     newuser.h \
     login.h \
     storage.h \
     message.h \
-    openmessage.h
+    messagewindow.h \
+    writemessage.h \
+    readmessage.h
 
 FORMS    += mainwindow.ui \
     login.ui \
     newuser.ui \
-    newmessage.ui \
-    openmessage.ui
+    writemessage.ui \
+    readmessage.ui

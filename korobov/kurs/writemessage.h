@@ -1,5 +1,5 @@
-#ifndef NEWMESSAGE_H
-#define NEWMESSAGE_H
+#ifndef WRITEMESSAGE_H
+#define WRITEMESSAGE_H
 
 #include <QDialog>
 #include <QFileDialog>
@@ -9,16 +9,16 @@
 #include "storage.h"
 
 namespace Ui {
-class NewMessage;
+class WriteMessage;
 }
 
-class NewMessage : public QDialog
+class WriteMessage : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit NewMessage(User *User, Storage< Message > *storage, QDialog *parent = 0);
-    ~NewMessage();
+    explicit WriteMessage(User *User, Storage< Message > *storage, QDialog *parent = 0);
+    ~WriteMessage();
 
 private slots:
     void on_browsePB_clicked();
@@ -26,10 +26,10 @@ private slots:
     void on_closePB_clicked();
 
 private:
-    Ui::NewMessage *ui_;
+    Ui::WriteMessage *ui_;
     QStringList files_;
     User *User_;
     Storage< Message > *smtpStorage_;
 };
 
-#endif // NEWMESSAGE_H
+#endif // WRITEMESSAGE_H
