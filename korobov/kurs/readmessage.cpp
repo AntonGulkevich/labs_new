@@ -12,7 +12,7 @@ ReadMessage::ReadMessage(Message *message, QWidget *parent) :
     ui_->messageTE->setText(message->body());
 
     QString attach = "";
-    foreach (QString str, message->files()) {
+    for (QString str : message->files()) {
         attach.append(str);
     }
     ui_->attachLE->setText(attach);
@@ -21,6 +21,6 @@ ReadMessage::ReadMessage(Message *message, QWidget *parent) :
 
 ReadMessage::~ReadMessage()
 {
-    qDebug() << "open message destructed";
+    qDebug() << "read message destructed";
     delete ui_;
 }

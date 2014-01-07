@@ -11,7 +11,8 @@ public:
     Message();
     Message(const QString &from, const QString &to,
             const QString &subj, const QString &body,
-            const QStringList &files, QDateTime &time, bool read = true);
+            const QStringList &files, QDateTime &time,
+            QString messageId = QString::null, bool read = true);
     Message(const Message& message);
     ~Message();
 
@@ -22,6 +23,8 @@ public:
     QStringList files() const;
     QDateTime datetime() const;
     QString id() const;
+    QString messageId() const;
+    void messageId(QString);
     bool read() const;
     void read(bool read);
 
@@ -33,6 +36,7 @@ private:
     QStringList files_;
     QDateTime datetime_;
     QString id_;
+    QString messageId_;
     bool read_;
 
 };

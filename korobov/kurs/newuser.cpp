@@ -17,6 +17,7 @@ NewUser::NewUser(User **User, QWidget *parent) :
 
 NewUser::~NewUser()
 {
+    qDebug() << "destruct newuser";
     delete ui_;
 }
 

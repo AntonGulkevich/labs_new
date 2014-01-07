@@ -19,7 +19,7 @@ POP3Client::~POP3Client()
     if (socket_) delete socket_;
 }
 
-// public
+// publicgitgi
 bool POP3Client::init()
 {
     if (state_ == Authorization) {
@@ -66,7 +66,11 @@ bool POP3Client::getMsgList(QStringList& uIdList)
         int i;
         for (i = 1; i < lines.count();i++) {
             QStringList words = lines[i].split(' ', QString::SkipEmptyParts);
+            bool ok = true;
+            words[0].toInt(&ok);
+            if (ok) {
             uIdList.append(words[0]);
+            }
         }
         return true;
     } else {

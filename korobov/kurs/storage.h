@@ -21,16 +21,13 @@ public:
 
     void importStorage();
     void exportStorage();
-    void add(T& object);
+    void add(T object);
     void remove(int id);
     int size() const;
     T& getObject(int id);
-    QList<T&> getObjects(bool (*callback)(T));
+    bool getObjects(QList<T> &list);
+    bool getObjects(QList<T> &list, bool (*callback)(const T&));
     void check(); // !!
-    typename QList<T> ::Iterator iterator;
-
-    typename QList<T> ::Iterator begin();
-    typename QList<T> ::Iterator end();
 };
 
 // public
@@ -45,7 +42,7 @@ template <class T>
 Storage<T>::~Storage()
 {
     delete container_;
-    qDebug() << "destruct";
+    qDebug() << "destruct storage";
 }
 
 // public
@@ -74,8 +71,9 @@ void Storage<T>::exportStorage()
         storageFile.open(QIODevice::WriteOnly);
         QDataStream out(&storageFile);
 
-        typename QList<T>::iterator it;
-        for (it = container_->begin(); it != container_->end(); ++it) {
+//        typename QList<T>::iterator it;
+        for (auto it = container_->begin(); it != container_->end(); ++it) {
+//        for (auto it : *container_) {
             out << *it;
         }
 
@@ -84,7 +82,7 @@ void Storage<T>::exportStorage()
 
 // public
 template <class T>
-void Storage<T>::add(T& object)
+void Storage<T>::add(T object)
 {
     container_->append(object);
 }
@@ -112,39 +110,41 @@ T&  Storage<T>::getObject(int id)
 
 // public
 template <class T>
-QList<T&> Storage<T>::getObjects(bool (*callback)(T))
+bool Storage<T>::getObjects(QList<T> &list)
 {
-    QList<T&> ret;
-    typename QMap<int, T>::iterator it;
-    for (it = container_->begin(); it != container_->end(); ++it) {
-        if (callback(*it)) {
-            ret.append(*it);
-        }
-    }
+    list = *container_;
+    return (list.size() > 0);
+}
 
-    return ret;
+// public
+template <class T>
+bool Storage<T>::getObjects(QList<T> &list, bool (*callback)(const T&))
+{
+    std::for_each(container_->begin(), container_->end(), [&](T obj) {
+       if (callback(obj)) list.append(obj);
+    });
+
+//    for (auto &it : *container_) {
+//        if (callback(it))
+//            list.append(it);
+//    }
+
+//    for (auto it = container_->begin(); it != container_->end(); ++it) {
+//        if (callback(*it)) {
+//            list.append(*it);
+//        }
+//    }
+
+    return (list.size() > 0);
 }
 
 // public
 template <class T>
 void Storage<T>::check() {
-    typename QMap<int, T>::iterator it;
-    for (it = container_->begin(); it != container_->end(); ++it) {
-//        qDebug() << it->to();
+    for (auto it : *container_) {
+//        qDebug() << it.
     }
 }
-// public
-template <class T>
-typename QList<T>::Iterator Storage<T>::begin()
-{
-    return container_->begin();
-}
 
-// public
-template <class T>
-typename QList<T>::Iterator Storage<T>::end()
-{
-    return container_->end();
-}
 
 #endif // STORAGE_H

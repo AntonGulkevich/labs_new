@@ -6,13 +6,15 @@
 #include <QTimer>
 #include <QTableWidget>
 #include <QHeaderView>
+#include <QCloseEvent>
+#include <QTimer>
+
 #include "user.h"
 #include "login.h"
 #include "storage.h"
 #include "message.h"
 #include "writemessage.h"
 #include "readmessage.h"
-
 namespace Ui {
     class MainWindow;
 }
@@ -39,7 +41,7 @@ private:
     Message parsePOP3Message(QString stringMessage);
 
 private slots:
-    void loginDialog_finished(int code);
+    void startLogin();
     void on_actionNew_Message_triggered();
     void on_actionGet_Mail_triggered();
     void on_actionDelete_triggered();

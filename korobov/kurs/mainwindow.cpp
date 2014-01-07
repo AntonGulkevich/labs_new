@@ -4,28 +4,27 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui_(new Ui::MainWindow),
-    Login_(0),
-    User_(0)
+    Login_(),
+    User_(0),
+    popStorage_(0), smtpStorage_(0)
 {
     ui_->setupUi(this);
     show();
-    Login_ = new Login(&User_, this);
-    Login_->setModal(true);
-    Login_->show();
-    connect(Login_, SIGNAL(finished(int)), this, SLOT(loginDialog_finished(int)));
+
     ui_->menuBar->setEnabled(false);
 
     QHeaderView *popHeader = ui_->popTW->horizontalHeader();
     QHeaderView *smtpHeader = ui_->smtpTW->horizontalHeader();
 
-
     popHeader->resizeSections(QHeaderView::Stretch);
-//    smtpHeader->resizeSections(QHeaderView::Stretch);
+    smtpHeader->resizeSections(QHeaderView::Stretch);
 
     ui_->popTW->setColumnCount(4);
     ui_->popTW->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->smtpTW->setColumnCount(4);
     ui_->smtpTW->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    QTimer::singleShot(200, this, SLOT(startLogin()));
 
 }
 
@@ -33,22 +32,24 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     qDebug() << "~";
-    delete ui_;
     if (Login_) delete Login_;
     if (User_) delete User_;
+    if (popStorage_) delete popStorage_;
+    if (smtpStorage_) delete smtpStorage_;
+    delete ui_;
 }
 
 // private
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    qDebug() << "close event";
     if (User_) {
+        qDebug() << "export storages";
         popStorage_->exportStorage();
         smtpStorage_->exportStorage();
     }
-    //        event->accept();
+    event->accept();
 }
-
-
 
 // private
 void MainWindow::showTable(QTableWidget *tableWidget, Storage<Message> *storage, bool isTo)
@@ -57,13 +58,14 @@ void MainWindow::showTable(QTableWidget *tableWidget, Storage<Message> *storage,
         tableWidget->removeRow(i);
 
     int i = 0;
-    for (storage->iterator = storage->begin(); storage->iterator != storage->end(); ++(storage->iterator))
-    {
-        tableWidget->insertRow(i);
-        showRecord(tableWidget, &(*(storage->iterator)), i, isTo);
-        i++;
+    QList<Message> tmp;
+    if (storage->getObjects(tmp)) {
+        for (auto record : tmp) {
+            tableWidget->insertRow(i);
+            showRecord(tableWidget, &record, i, isTo);
+            i++;
+        }
     }
-
 }
 
 // private
@@ -110,6 +112,7 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
     QStringList files;
     QDateTime datetime;
     bool read;
+    QString messageId;
 
     QStringList lines = stringMessage.split("\r\n");
     foreach (QString line, lines) {
@@ -126,32 +129,43 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
             tmp = tmp.section(",", 1).trimmed();
             tmp.chop(6);
             datetime = QDateTime::fromString(tmp, "d MMM yyyy hh:mm:ss");
+
+//            Date: Tue, 07 Jan 2014 13:10:43 -0800 (PST)
         }
 
+        if (line.startsWith("Message-Id: ")) {
+            messageId = line.section("Message-Id: ", 1);
+        }
 
-//        QString str = "Fri, 24 May 2013 14:48:00 +0400";
-//        str = str.section(",", 1).trimmed();
-//                str.chop(6);
+        //        QString str = "Fri, 24 May 2013 14:48:00 +0400";
+        //        str = str.section(",", 1).trimmed();
+        //                str.chop(6);
 
-//        qDebug() << str;
-//        QDateTime dt = QDateTime::fromString(str, "d MMM yyyy hh:mm:ss");
-//        qDebug() << dt.toString();
+        //        qDebug() << str;
+        //        QDateTime dt = QDateTime::fromString(str, "d MMM yyyy hh:mm:ss");
+        //        qDebug() << dt.toString();
 
-
-
-//        qDebug() << to << " " << subj << " " << time;
+        //        qDebug() << to << " " << subj << " " << time;
     }
-    Message readMessage(from, User_->email(), subj, "", QStringList(), datetime, false);
+
+    //////
+    ///
+    body = stringMessage;
+    ///
+
+    Message readMessage(from, User_->email(), subj, body, QStringList(), datetime, messageId, false);
     qDebug() << readMessage.id();
     return readMessage;
 }
 
-// private slots
-void MainWindow::loginDialog_finished(int code)
+// private slot
+void MainWindow::startLogin()
 {
-    if (code == 0) {
-        close();
-    } else if (code == 1) {
+    Login_ = new Login(&User_, this);
+    Login_->setModal(true);
+    int code = Login_->exec();
+    if (code == QDialog::Accepted) {
+        qDebug() << "accepted!";
         ui_->menuBar->setEnabled(true);
         popStorage_ = new Storage<Message>("pop" + User_->id());
         popStorage_->importStorage();
@@ -159,6 +173,13 @@ void MainWindow::loginDialog_finished(int code)
         smtpStorage_->importStorage();
         showTable(ui_->popTW, popStorage_);
         showTable(ui_->smtpTW, smtpStorage_);
+    } else if (code == QDialog::Rejected) {
+        if (User_) {
+            delete User_;
+            User_ = 0;
+        }
+        qDebug() << "try to close";
+        close();
     }
 }
 
@@ -181,11 +202,14 @@ void MainWindow::on_actionGet_Mail_triggered()
             if (POP3.getMsgList(uIdList)) {
                 QString message;
                 foreach (QString str, uIdList) {
-//                   POP3.getMessageTop(str, 10, top);
+                    qDebug() << "retrieve: " <<  str;
                     POP3.getMessage(str, message);
+                    if (!message.isEmpty()) {
+                    qDebug() << "obtained:" << message;
                     Message retr(parsePOP3Message(message));
-//                    qDebug() << retr.id();
+//                                        qDebug() << retr.id();
                     popStorage_->add(retr);
+                    }
                 }
             }
         }
@@ -199,6 +223,13 @@ void MainWindow::on_actionDelete_triggered()
 
 }
 
+bool istest(const Message &m) {
+    if (m.subj() == "test")
+        return true;
+    else
+        return false;
+}
+
 // private slots
 void MainWindow::on_actionAbout_triggered()
 {
@@ -207,6 +238,12 @@ void MainWindow::on_actionAbout_triggered()
                          "<p>Copyright &copy; 2013 Nikonov Danil from SP-91."
                          "<p>Mail Client is a small application that "
                          "demonstrates operations with POP3 and SMTP servers.");
+    QList<Message> tmp;
+    smtpStorage_->getObjects(tmp, istest);
+
+    for (auto it : tmp) {
+        qDebug() << it.id();
+    }
 }
 
 
@@ -230,3 +267,4 @@ void MainWindow::on_popTW_doubleClicked(const QModelIndex &index)
         delete readMessage;
     }
 }
+

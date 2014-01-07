@@ -29,8 +29,10 @@ void WriteMessage::on_browsePB_clicked()
         files_ = dialog.selectedFiles();
 
     QString fileListString;
-    foreach(QString file, files_)
+
+    for (QString file : files_) {
         fileListString.append( "\"" + QFileInfo(file).fileName() + "\" " );
+    }
 
     ui_->attachLE->setText(fileListString);
 }

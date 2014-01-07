@@ -8,12 +8,13 @@ Login::Login(User **user, QWidget *parent) :
 {
     ui_->setupUi(this);
     userStorage_->importStorage();
-
     updateLW();
 }
 
 Login::~Login()
 {
+    qDebug() << "destruct login";
+    //    if (User_) delete *User_;
     if (userStorage_) delete userStorage_;
     delete ui_;
 }
@@ -21,7 +22,6 @@ Login::~Login()
 // public static
 bool Login::checkConnect(User *user)
 {
-    return true;
     // check POP3
     bool pop3 = false;
     POP3Client POP3(user->email(), user->password(),
@@ -58,21 +58,24 @@ bool Login::checkConnect(User *user)
     return pop3 && smtp;
 }
 
-// public slot
+// private slot
 void Login::on_newUserPB_clicked()
 {
-    NewUser *newUser = new NewUser(User_, this);
-
-    int exec = newUser->exec();
+    NewUser newUser(User_, this);
+    int exec = newUser.exec();
     if (exec == QDialog::Accepted) {
+        qDebug() << (*User_)->id();
         userStorage_->add(**User_);
         userStorage_->exportStorage();
         updateLW();
-                delete User_;
+    }
+    if (*User_) {
+        delete *User_;
+        *User_ = 0;
     }
 }
 
-// public slot
+// private slot
 void Login::on_delUserPB_clicked()
 {
     int index = ui_->usersLW->currentIndex().row();
@@ -87,12 +90,12 @@ void Login::on_delUserPB_clicked()
 
 }
 
-// public slot
+// private slot
 void Login::on_loginPB_clicked()
 {
     login(ui_->usersLW->currentIndex().row());
 }
-
+// private slot
 void Login::on_usersLW_doubleClicked(const QModelIndex &modelIndex)
 {
     login(modelIndex.row());
@@ -118,9 +121,15 @@ void Login::login(int index)
 void Login::updateLW()
 {
     ui_->usersLW->clear();
+    QList<User> tmp;
+    if (userStorage_->getObjects(tmp)) {
+        for (auto it = tmp.begin(); it != tmp.end(); ++it) {
+            ui_->usersLW->addItem(it->email());
+        }
+    }
+
     int size = userStorage_->size();
     for (int i = 0; i < size; ++i) {
-        ui_->usersLW->addItem(userStorage_->getObject(i).email());
     }
 }
 
