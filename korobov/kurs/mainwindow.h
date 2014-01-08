@@ -8,6 +8,7 @@
 #include <QHeaderView>
 #include <QCloseEvent>
 #include <QTimer>
+#include <QRegExp>
 
 #include "user.h"
 #include "login.h"

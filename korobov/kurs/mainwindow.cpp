@@ -126,29 +126,29 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
 
         if (line.startsWith("Date: ")) {
             QString tmp = line.section("Date: ", 1);
-            tmp = tmp.section(",", 1).trimmed();
-            tmp.chop(6);
-            datetime = QDateTime::fromString(tmp, "d MMM yyyy hh:mm:ss");
+            /// Tue, (07 Jan 2014 13:10:40) (-)(08)(00) PST
+            /// Fri, (24 May 2013 14:48:00) (+)(04)(00)
+            QRegExp reg("\\D*, (.*) (\\+|\\-)(\\d{2})(\\d{2}).*$");
 
-//            Date: Tue, 07 Jan 2014 13:10:43 -0800 (PST)
+            if (reg.indexIn(tmp) > -1) {
+                int offsetHour = reg.cap(3).toInt();
+                int offsetMin = reg.cap(4).toInt();
+                if (reg.cap(2) == "-") {
+                    offsetHour *= -1;
+                    offsetMin *= -1;
+                }
+
+                datetime = QDateTime::fromString(reg.cap(1), "d MMM yyyy hh:mm:ss");
+                datetime = datetime.addSecs((4 - offsetHour) * 3600);
+                datetime = datetime.addSecs((0 - offsetMin) * 60);
+            }
         }
 
         if (line.startsWith("Message-Id: ")) {
             messageId = line.section("Message-Id: ", 1);
         }
-
-        //        QString str = "Fri, 24 May 2013 14:48:00 +0400";
-        //        str = str.section(",", 1).trimmed();
-        //                str.chop(6);
-
-        //        qDebug() << str;
-        //        QDateTime dt = QDateTime::fromString(str, "d MMM yyyy hh:mm:ss");
-        //        qDebug() << dt.toString();
-
-        //        qDebug() << to << " " << subj << " " << time;
     }
 
-    //////
     ///
     body = stringMessage;
     ///
