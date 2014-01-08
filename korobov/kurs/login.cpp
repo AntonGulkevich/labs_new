@@ -103,7 +103,7 @@ void Login::on_loginPB_clicked()
 // private slot
 void Login::on_usersLW_doubleClicked(const QModelIndex &modelIndex)
 {
-//    login(modelIndex.row());
+    login(modelIndex.row());
 }
 
 // private

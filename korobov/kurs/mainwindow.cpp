@@ -115,7 +115,7 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
     QString messageId;
 
     QStringList lines = stringMessage.split("\r\n");
-//    for (auto line = ;)
+    //    for (auto line = ;)
     foreach (QString line, lines) {
         if (line.startsWith("From: ")) {
             to = line.section("From: ", 1);
@@ -146,10 +146,10 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
         }
 
         if (line.startsWith("Content-Type: ")) {
+//            qDebug() << "line::::" << line;
             QRegExp b(".*; boundary=(.*)");
             if (b.indexIn(line) > -1) {
                 boundary = b.cap(1);
-                qDebug() << "B!!!: " << boundary;
             }
         }
 
@@ -158,31 +158,49 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
         }
     }
 
+    // parse body
     QStringList bodyParts = stringMessage.split("--" + boundary);
     bodyParts.removeAt(0);
-    qDebug() << "body parts: ";
+
     for (auto part : bodyParts) {
-        QStringList lines = part.split("\r\n");
-        for (auto line : lines) {
-            QString contentType, encodeType;
+        int i = 0;
 
-            if (line.startsWith("Content-Type: ")) {
-                contentType = line.section("Content-Type: ", 1);
-                qDebug() << "Content-Type: " << contentType;
-                if (contentType.startsWith("text\plain")) {
+        QString contentType, encodeType;
+        QStringList lines = part.split("\r\n", QString::SkipEmptyParts);
 
-                } else {
-                    continue;
-                }
-            }
+        qDebug() << "<<<<<";
+        for (auto l : lines) {
+            qDebug() << "[" << i << "]: " << l;
         }
-        qDebug() << "_____________";
-//        qDebug() << line;
-    }
+        qDebug() << ">>>>>";
 
-    ///
-    body = stringMessage;
-    ///
+        contentType = lines[0].section("Content-Type: ", 1);
+        qDebug() <<  "contentType: " << contentType;
+
+        if (contentType.startsWith("text/plain")) {
+            contentType = "text";
+            if (lines[1].startsWith("Content-Transfer-Encoding: ")) {
+                encodeType = lines[1].section("Content-Transfer-Encoding: ", 1);
+                qDebug() << "encode type: " << encodeType;
+                if (encodeType == "base64") {
+                    for (int i = 2; i < lines.size(); ++i) {
+                        QByteArray text(lines[i].toStdString().c_str());
+                        body.append(QByteArray(QByteArray::fromBase64(text)).data());
+                    }
+                }
+            } else {
+                for (int i = 1; i < lines.size(); ++i) {
+                    if (lines[i] == ".") break;
+                    body.append(lines[i]);
+                }
+                qDebug() << "body: " << body;
+            }
+        } else if (contentType.startsWith("application/octet-stream")) {
+            contentType = "file";
+        } else {
+            continue;
+        }
+    }
 
     Message readMessage(from, User_->email(), subj, body, QStringList(), datetime, messageId, false);
     qDebug() << readMessage.id();
