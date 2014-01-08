@@ -8,6 +8,8 @@
 #include <QMessageBox>
 #include <QFile>
 #include <QFileInfo>
+#include <QTime>
+#include <QCryptographicHash>
 
 class SMTPClient : public QObject
 {

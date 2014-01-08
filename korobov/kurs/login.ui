@@ -94,21 +94,5 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>loginPB</sender>
-   <signal>clicked()</signal>
-   <receiver>Login</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>58</x>
-     <y>282</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>340</x>
-     <y>200</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
 </ui>

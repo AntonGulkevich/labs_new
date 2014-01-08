@@ -42,7 +42,7 @@ bool Login::checkConnect(User *user)
     return pop3 && smtp;
 
     // check SMTP    readResponse(response);
-//    bool smtp = false;
+    //    bool smtp = false;
     SMTPClient SMTP(user->email(), user->password(),
                     user->smtpHost(), user->smtpPort());
     if (SMTP.init()) {
@@ -96,12 +96,14 @@ void Login::on_delUserPB_clicked()
 // private slot
 void Login::on_loginPB_clicked()
 {
-    login(ui_->usersLW->currentIndex().row());
+    if (ui_->usersLW->currentRow() >= 0) {
+        login(ui_->usersLW->currentIndex().row());
+    }
 }
 // private slot
 void Login::on_usersLW_doubleClicked(const QModelIndex &modelIndex)
 {
-    login(modelIndex.row());
+//    login(modelIndex.row());
 }
 
 // private

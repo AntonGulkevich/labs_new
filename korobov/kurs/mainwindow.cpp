@@ -109,12 +109,13 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
 {
     QString to = User_->email();
     QString from, subj, body;
+    QString boundary;
     QStringList files;
     QDateTime datetime;
-    bool read;
     QString messageId;
 
     QStringList lines = stringMessage.split("\r\n");
+//    for (auto line = ;)
     foreach (QString line, lines) {
         if (line.startsWith("From: ")) {
             to = line.section("From: ", 1);
@@ -144,9 +145,39 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
             }
         }
 
+        if (line.startsWith("Content-Type: ")) {
+            QRegExp b(".*; boundary=(.*)");
+            if (b.indexIn(line) > -1) {
+                boundary = b.cap(1);
+                qDebug() << "B!!!: " << boundary;
+            }
+        }
+
         if (line.startsWith("Message-Id: ")) {
             messageId = line.section("Message-Id: ", 1);
         }
+    }
+
+    QStringList bodyParts = stringMessage.split("--" + boundary);
+    bodyParts.removeAt(0);
+    qDebug() << "body parts: ";
+    for (auto part : bodyParts) {
+        QStringList lines = part.split("\r\n");
+        for (auto line : lines) {
+            QString contentType, encodeType;
+
+            if (line.startsWith("Content-Type: ")) {
+                contentType = line.section("Content-Type: ", 1);
+                qDebug() << "Content-Type: " << contentType;
+                if (contentType.startsWith("text\plain")) {
+
+                } else {
+                    continue;
+                }
+            }
+        }
+        qDebug() << "_____________";
+//        qDebug() << line;
     }
 
     ///
@@ -202,21 +233,14 @@ void MainWindow::on_actionGet_Mail_triggered()
             if (POP3.getMsgList(uIdList)) {
                 QString message;
                 foreach (QString str, uIdList) {
-                    qDebug() << "retrieve: " <<  str;
                     POP3.getMessage(str, message);
                     if (!message.isEmpty()) {
-                        qDebug() << "obtained:" << message;
                         Message retr(parsePOP3Message(message));
+
                         auto func = [](Message& a, Message& b) { return (a.id() == b.id()); };
-//                        func(retr);
                         if (!popStorage_->isObject(retr, func)) {
                             popStorage_->add(retr);
-                        } else {
-                            qDebug() << "retr with id: " << retr.id() << " is not new";
                         }
-//                        if (!popStorage_->isObject([](Message &m) { return true; })) {
-//                            //                                        qDebug() << retr.id();
-//                        }
                     }
                 }
             }

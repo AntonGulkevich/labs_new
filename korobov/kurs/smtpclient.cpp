@@ -32,9 +32,16 @@ bool SMTPClient::send(const QString &from, const QString &to,
     message_.append("Subject: " + subject + "\n");
 
     message_.append("MIME-Version: 1.0\n");
-    message_.append("Content-Type: multipart/mixed; boundary=frontier\n\n");
 
-    message_.append( "--frontier\n" );
+    QString boundary = QString(QCryptographicHash::hash(QTime::currentTime()
+                                                        .toString()
+                                                        .toUtf8(),
+                                                        QCryptographicHash::Md5)
+                               .toHex()).left(10);
+
+    message_.append("Content-Type: multipart/mixed; boundary="+boundary+"\n\n");
+
+    message_.append( "--"+boundary+"\n" );
     message_.append( "Content-Type: text/plain\n\n" );
     message_.append(body);
     message_.append("\n\n");
@@ -52,23 +59,25 @@ bool SMTPClient::send(const QString &from, const QString &to,
                     return false;
                 }
                 QByteArray bytes = file.readAll();
-                message_.append( "--frontier\n" );
-                message_.append( "Content-Type: application/octet-stream\nContent-Disposition: attachment; filename="+ QFileInfo(file.fileName()).fileName() +";\nContent-Transfer-Encoding: base64\n\n" );
+                message_.append("--"+boundary+"\n" );
+                message_.append("Content-Type: application/octet-stream\nContent-Disposition: attachment; filename="
+                                + QFileInfo(file.fileName()).fileName()
+                                + ";\nContent-Transfer-Encoding: base64\n\n" );
                 message_.append(bytes.toBase64());
-                message_.append("\socket_n");
+                message_.append("\n");
             }
         }
     }
 
-
+    message_.append( "--"+boundary+"--\n" );
     message_.replace(QString::fromLatin1( "\n" ), QString::fromLatin1( "\r\n" ));
     message_.replace(QString::fromLatin1( "\r\n.\r\n" ), QString::fromLatin1( "\r\n..\r\n" ));
 
     from_ = from;
     rcpt_ = to;
-        if (init() && login()) {
-            return (mail_msg() && rcpt_msg() && data_msg() && body_msg() && quit());
-        }
+    if (init() && login()) {
+        return (mail_msg() && rcpt_msg() && data_msg() && body_msg() && quit());
+    }
     return false;
 }
 
