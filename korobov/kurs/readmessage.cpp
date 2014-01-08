@@ -16,6 +16,7 @@ ReadMessage::ReadMessage(Message *message, QWidget *parent) :
         attach.append(str);
     }
     ui_->attachLE->setText(attach);
+    message->read(true);
 
 }
 

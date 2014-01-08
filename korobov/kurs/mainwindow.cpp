@@ -205,10 +205,18 @@ void MainWindow::on_actionGet_Mail_triggered()
                     qDebug() << "retrieve: " <<  str;
                     POP3.getMessage(str, message);
                     if (!message.isEmpty()) {
-                    qDebug() << "obtained:" << message;
-                    Message retr(parsePOP3Message(message));
-//                                        qDebug() << retr.id();
-                    popStorage_->add(retr);
+                        qDebug() << "obtained:" << message;
+                        Message retr(parsePOP3Message(message));
+                        auto func = [](Message& a, Message& b) { return (a.id() == b.id()); };
+//                        func(retr);
+                        if (!popStorage_->isObject(retr, func)) {
+                            popStorage_->add(retr);
+                        } else {
+                            qDebug() << "retr with id: " << retr.id() << " is not new";
+                        }
+//                        if (!popStorage_->isObject([](Message &m) { return true; })) {
+//                            //                                        qDebug() << retr.id();
+//                        }
                     }
                 }
             }
@@ -254,6 +262,7 @@ void MainWindow::on_smtpTW_doubleClicked(const QModelIndex &index)
     ReadMessage *readMessage = new ReadMessage(m, this);
     if (readMessage->exec() == QDialog::Rejected) {
         delete readMessage;
+        showTable(ui_->smtpTW, smtpStorage_);
     }
 
 }
@@ -265,6 +274,7 @@ void MainWindow::on_popTW_doubleClicked(const QModelIndex &index)
     ReadMessage *readMessage = new ReadMessage(m, this);
     if (readMessage->exec() == QDialog::Rejected) {
         delete readMessage;
+        showTable(ui_->popTW, popStorage_);
     }
 }
 

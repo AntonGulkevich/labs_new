@@ -130,10 +130,6 @@ void Login::updateLW()
             ui_->usersLW->addItem(it->email());
         }
     }
-
-    int size = userStorage_->size();
-    for (int i = 0; i < size; ++i) {
-    }
 }
 
 // private

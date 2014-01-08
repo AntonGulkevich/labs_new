@@ -25,6 +25,7 @@ public:
     void remove(int id);
     int size() const;
     T& getObject(int id);
+    bool isObject(T& orig, bool (*callback)(T&, T&));
     bool getObjects(QList<T> &list);
     bool getObjects(QList<T> &list, bool (*callback)(const T&));
     void check(); // !!
@@ -108,6 +109,17 @@ T&  Storage<T>::getObject(int id)
     return (*container_)[id];
 }
 
+//public
+template <class T>
+bool Storage<T>::isObject(T& orig, bool (*callback)(T&, T&))
+{
+    for (auto &it : *container_) {
+        if (callback(orig, it))
+            return true;
+    }
+    return false;
+}
+
 // public
 template <class T>
 bool Storage<T>::getObjects(QList<T> &list)
@@ -120,14 +132,14 @@ bool Storage<T>::getObjects(QList<T> &list)
 template <class T>
 bool Storage<T>::getObjects(QList<T> &list, bool (*callback)(const T&))
 {
-    std::for_each(container_->begin(), container_->end(), [&](T obj) {
-       if (callback(obj)) list.append(obj);
-    });
+//    std::for_each(container_->begin(), container_->end(), [&](T obj) {
+//       if (callback(obj)) list.append(obj);
+//    });
 
-//    for (auto &it : *container_) {
-//        if (callback(it))
-//            list.append(it);
-//    }
+    for (auto &it : *container_) {
+        if (callback(it))
+            list.append(it);
+    }
 
 //    for (auto it = container_->begin(); it != container_->end(); ++it) {
 //        if (callback(*it)) {
