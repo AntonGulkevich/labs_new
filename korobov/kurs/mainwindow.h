@@ -17,7 +17,7 @@
 #include "writemessage.h"
 #include "readmessage.h"
 namespace Ui {
-    class MainWindow;
+class MainWindow;
 }
 
 class MainWindow : public QMainWindow {

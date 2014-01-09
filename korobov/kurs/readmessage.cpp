@@ -2,8 +2,8 @@
 #include "ui_readmessage.h"
 
 ReadMessage::ReadMessage(Message *message, QWidget *parent) :
-QDialog(parent),
-ui_(new Ui::ReadMessage), Message_(message) {
+    QDialog(parent),
+    ui_(new Ui::ReadMessage), Message_(message) {
     ui_->setupUi(this);
     ui_->toLE->setText(message->to());
     ui_->subjectLE->setText(message->subj());
@@ -20,6 +20,6 @@ ui_(new Ui::ReadMessage), Message_(message) {
 }
 
 ReadMessage::~ReadMessage() {
-    qDebug() << "read message destructed";
+    qDebug() << "~ReadMessage()";
     delete ui_;
 }

@@ -9,8 +9,8 @@ class User {
 public:
     User();
     User(const QString &email, const QString &password,
-            const QString &popHost, const QString &smtpHost,
-            const quint16 &popPort, const quint16 &smtpPort);
+         const QString &popHost, const QString &smtpHost,
+         const quint16 &popPort, const quint16 &smtpPort);
     User(const User& orig);
 
     QString email() const;

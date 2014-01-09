@@ -13,7 +13,7 @@ class POP3Client : public QObject {
     Q_OBJECT
 public:
     POP3Client(const QString &email, const QString &password,
-            const QString &host, quint16 port, int timeout = 30000);
+               const QString &host, quint16 port, int timeout = 30000);
     ~POP3Client();
 
     bool init();

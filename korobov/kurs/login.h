@@ -10,7 +10,7 @@
 
 
 namespace Ui {
-    class Login;
+class Login;
 }
 
 class Login : public QDialog {

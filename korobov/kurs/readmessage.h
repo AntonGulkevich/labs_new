@@ -5,7 +5,7 @@
 #include <QDebug>
 #include "message.h"
 namespace Ui {
-    class ReadMessage;
+class ReadMessage;
 }
 
 class ReadMessage : public QDialog {

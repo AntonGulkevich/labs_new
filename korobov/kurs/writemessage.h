@@ -9,7 +9,7 @@
 #include "storage.h"
 
 namespace Ui {
-    class WriteMessage;
+class WriteMessage;
 }
 
 class WriteMessage : public QDialog {

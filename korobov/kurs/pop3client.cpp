@@ -3,10 +3,9 @@
 //public
 
 POP3Client::POP3Client(const QString &email, const QString &password,
-        const QString &host, quint16 port, int timeout) :
-socket_(new QSslSocket(this)),
-email_(email), password_(password), host_(host), port_(port), timeout_(timeout), state_(NotConnected) {
-    qDebug() << "POP3 client created";
+                       const QString &host, quint16 port, int timeout) :
+    socket_(new QSslSocket(this)),
+    email_(email), password_(password), host_(host), port_(port), timeout_(timeout), state_(NotConnected) {
     connect(socket_, SIGNAL(connected()), this, SLOT(connected()));
     connect(socket_, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(errorReceived(QAbstractSocket::SocketError)));
     connect(socket_, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(stateChanged(QAbstractSocket::SocketState)));
@@ -16,10 +15,11 @@ email_(email), password_(password), host_(host), port_(port), timeout_(timeout),
 // public
 
 POP3Client::~POP3Client() {
+    qDebug() << "~POP3Client()";
     if (socket_) delete socket_;
 }
 
-// publicgitgi
+// public
 
 bool POP3Client::init() {
     if (state_ == Authorization) {
@@ -59,7 +59,6 @@ bool POP3Client::login() {
 //public
 
 bool POP3Client::getMsgList(QList< QPair<QString, quint64> >& list)
-//bool POP3Client::getMsgList(QStringList& uIdList)
 {
     QString res = doCommand("LIST\r\n");
     qDebug() << res;

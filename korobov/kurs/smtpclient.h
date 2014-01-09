@@ -15,12 +15,12 @@ class SMTPClient : public QObject {
     Q_OBJECT
 public:
     SMTPClient(const QString &email, const QString &password,
-            const QString &host, quint16 port, int timeout = 30000);
+               const QString &host, quint16 port, int timeout = 30000);
 
     ~SMTPClient();
 
     bool send(const QString &from, const QString &to,
-            const QString &subject, const QString &body, QStringList files);
+              const QString &subject, const QString &body, QStringList files);
     bool init();
     bool login();
     bool quit();

@@ -3,11 +3,11 @@
 // public
 
 MainWindow::MainWindow(QWidget *parent) :
-QMainWindow(parent),
-ui_(new Ui::MainWindow),
-Login_(),
-User_(0),
-popStorage_(0), smtpStorage_(0) {
+    QMainWindow(parent),
+    ui_(new Ui::MainWindow),
+    Login_(),
+    User_(0),
+    popStorage_(0), smtpStorage_(0) {
     ui_->setupUi(this);
     show();
 
@@ -31,7 +31,7 @@ popStorage_(0), smtpStorage_(0) {
 // public
 
 MainWindow::~MainWindow() {
-    qDebug() << "~";
+    qDebug() << "~MainWindow()";
     if (Login_) delete Login_;
     if (User_) delete User_;
     if (popStorage_) delete popStorage_;
@@ -42,9 +42,7 @@ MainWindow::~MainWindow() {
 // private
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    qDebug() << "close event";
     if (User_) {
-        qDebug() << "export storages";
         popStorage_->exportStorage();
         smtpStorage_->exportStorage();
     }
@@ -71,8 +69,6 @@ void MainWindow::showTable(QTableWidget *tableWidget, Storage<Message> *storage,
 // private
 
 void MainWindow::showRecord(QTableWidget *tableWidget, Message *message, int index, bool isTo) {
-    qDebug() << "show table";
-
     QFont bold;
     bold.setBold(true);
 
@@ -147,7 +143,6 @@ Message MainWindow::parsePOP3Message(QString stringMessage) {
         }
 
         if (line.startsWith("Content-Type: ")) {
-            //            qDebug() << "line::::" << line;
             QRegExp b(".*; boundary=(.*)");
             if (b.indexIn(line) > -1) {
                 boundary = b.cap(1);
@@ -164,22 +159,13 @@ Message MainWindow::parsePOP3Message(QString stringMessage) {
     bodyParts.removeAt(0);
 
     for (auto part : bodyParts) {
-        int i = 0;
-
         QString contentType, encodeType;
         QStringList lines = part.split("\r\n", QString::SkipEmptyParts);
-
-        //        qDebug() << "<<<<<";
-        //        for (auto l : lines) {
-        //            qDebug() << "[" << i << "]: " << l;
-        //        }
-        //        qDebug() << ">>>>>";
 
         contentType = lines[0].section("Content-Type: ", 1);
 
         if (contentType.startsWith("text/plain")) {
             contentType = "text";
-            qDebug() << contentType;
 
             encodeType = lines[1].section("Content-Transfer-Encoding: ", 1);
             if (encodeType == "base64") {
@@ -191,7 +177,6 @@ Message MainWindow::parsePOP3Message(QString stringMessage) {
         }
         else if (contentType.startsWith("application/octet-stream")) {
             contentType = "file";
-            qDebug() << contentType;
             QString filename = lines[1].section("filename=", 1);
             filename.chop(1);
             files.append(filename);
@@ -202,7 +187,6 @@ Message MainWindow::parsePOP3Message(QString stringMessage) {
                 QDir userPath(filesPath.absolutePath() + "/" + to);
 
                 if (!userPath.exists()) {
-                    qDebug() << "try to create dir";
                     filesPath.mkdir(to);
                 }
                 QFile saveFile(userPath.absolutePath() + "/" + messageId + "/" + filename);
@@ -224,7 +208,6 @@ Message MainWindow::parsePOP3Message(QString stringMessage) {
     }
 
     Message readMessage(from, to, subj, body, files, datetime, messageId, false);
-    qDebug() << readMessage.id();
     return readMessage;
 }
 
@@ -235,7 +218,6 @@ void MainWindow::startLogin() {
     Login_->setModal(true);
     int code = Login_->exec();
     if (code == QDialog::Accepted) {
-        qDebug() << "accepted!";
         ui_->menuBar->setEnabled(true);
         popStorage_ = new Storage<Message>("pop" + User_->id());
         popStorage_->importStorage();
@@ -248,7 +230,6 @@ void MainWindow::startLogin() {
             delete User_;
             User_ = 0;
         }
-        qDebug() << "try to close";
         close();
     }
 }
@@ -265,7 +246,7 @@ void MainWindow::on_actionNew_Message_triggered() {
 
 void MainWindow::on_actionGet_Mail_triggered() {
     POP3Client POP3((User_)->email(), (User_)->password(),
-            (User_)->popHost(), (User_)->popPort());
+                    (User_)->popHost(), (User_)->popPort());
     QList< QPair<QString, quint64> > list;
     if (POP3.init()) {
         if (POP3.login()) {
@@ -308,16 +289,10 @@ bool istest(const Message &m) {
 
 void MainWindow::on_actionAbout_triggered() {
     QMessageBox::warning(0, "About Mail Client",
-            "<h2>Mail Client 0.8.3-2</h2>"
-            "<p>Copyright &copy; 2013 Nikonov Danil from SP-91."
-            "<p>Mail Client is a small application that "
-            "demonstrates operations with POP3 and SMTP servers.");
-    QList<Message> tmp;
-    smtpStorage_->getObjects(tmp, istest);
-
-    for (auto it : tmp) {
-        qDebug() << it.id();
-    }
+                         "<h2>Mail Client 0.8.3-2</h2>"
+                         "<p>Copyright &copy; 2013 Nikonov Danil from SP-91."
+                         "<p>Mail Client is a small application that "
+                         "demonstrates operations with POP3 and SMTP servers.");
 }
 
 void MainWindow::on_smtpTW_doubleClicked(const QModelIndex &index) {

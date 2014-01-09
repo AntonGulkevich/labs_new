@@ -9,8 +9,8 @@
 #include "ui_readmessage.h"
 
 namespace Ui {
-    class WriteMessage;
-    class ReadMessage;
+class WriteMessage;
+class ReadMessage;
 }
 
 class MessageWindow : public QDialog, public Message {

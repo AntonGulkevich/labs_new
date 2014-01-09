@@ -26,22 +26,20 @@ public:
     bool isObject(T& orig, bool (*callback)(T&, T&));
     bool getObjects(QList<T> &list);
     bool getObjects(QList<T> &list, bool (*callback)(const T&));
-    void check(); // !!
 };
 
 // public
 
 template <class T>
 Storage<T>::Storage(const QString filename)
-: container_(new QList<T>()), filename_(filename) {
-    qDebug() << "storage created!";
+    : container_(new QList<T>()), filename_(filename) {
     path_ = "/home/dn/mailclient";
 }
 
 template <class T>
 Storage<T>::~Storage() {
     delete container_;
-    qDebug() << "destruct storage";
+    qDebug() << "~Storage()";
 }
 
 // public
@@ -66,14 +64,11 @@ void Storage<T>::importStorage() {
 template <class T>
 void Storage<T>::exportStorage() {
     QFile storageFile(path_ + "/" + filename_);
-    qDebug() << storageFile.fileName();
     storageFile.open(QIODevice::WriteOnly);
     QDataStream out(&storageFile);
 
-    //        typename QList<T>::iterator it;
-    for (auto it = container_->begin(); it != container_->end(); ++it) {
-        //        for (auto it : *container_) {
-        out << *it;
+    for (auto it : *container_) {
+        out << it;
     }
 
     storageFile.close();
@@ -130,32 +125,12 @@ bool Storage<T>::getObjects(QList<T> &list) {
 
 template <class T>
 bool Storage<T>::getObjects(QList<T> &list, bool (*callback)(const T&)) {
-    //    std::for_each(container_->begin(), container_->end(), [&](T obj) {
-    //       if (callback(obj)) list.append(obj);
-    //    });
-
     for (auto &it : *container_) {
         if (callback(it))
             list.append(it);
     }
 
-    //    for (auto it = container_->begin(); it != container_->end(); ++it) {
-    //        if (callback(*it)) {
-    //            list.append(*it);
-    //        }
-    //    }
-
     return (list.size() > 0);
 }
-
-// public
-
-template <class T>
-void Storage<T>::check() {
-    for (auto it : *container_) {
-        //        qDebug() << it.
-    }
-}
-
 
 #endif // STORAGE_H

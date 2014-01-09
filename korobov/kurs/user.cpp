@@ -3,32 +3,32 @@
 // public
 
 User::User()
-: email_(QString::null), password_(QString::null),
-popHost_(QString::null), smtpHost_(QString::null),
-popPort_(0), smtpPort_(0) {
+    : email_(QString::null), password_(QString::null),
+      popHost_(QString::null), smtpHost_(QString::null),
+      popPort_(0), smtpPort_(0) {
 }
 
 // public
 
 User::User(const QString &email, const QString &password,
-        const QString &popHost, const QString &smtpHost,
-        const quint16 &popPort, const quint16 &smtpPort)
-: email_(email), password_(password),
-popHost_(popHost), smtpHost_(smtpHost),
-popPort_(popPort), smtpPort_(smtpPort),
-auth_(false) {
+           const QString &popHost, const QString &smtpHost,
+           const quint16 &popPort, const quint16 &smtpPort)
+    : email_(email), password_(password),
+      popHost_(popHost), smtpHost_(smtpHost),
+      popPort_(popPort), smtpPort_(smtpPort),
+      auth_(false) {
     id_ = QString(QCryptographicHash::hash(
-            email_.toUtf8() + popHost_.toUtf8() + smtpHost_.toUtf8(),
-            QCryptographicHash::Md5).toHex());
+                      email_.toUtf8() + popHost_.toUtf8() + smtpHost_.toUtf8(),
+                      QCryptographicHash::Md5).toHex());
 }
 
 // public
 
 User::User(const User& orig)
-: email_(orig.email_), password_(orig.password_),
-popHost_(orig.popHost_), smtpHost_(orig.smtpHost_),
-popPort_(orig.popPort_), smtpPort_(orig.smtpPort_),
-id_(orig.id_) {
+    : email_(orig.email_), password_(orig.password_),
+      popHost_(orig.popHost_), smtpHost_(orig.smtpHost_),
+      popPort_(orig.popPort_), smtpPort_(orig.smtpPort_),
+      id_(orig.id_) {
 
 }
 
@@ -81,8 +81,8 @@ QString User::id() const {
 
 QDataStream& operator<<(QDataStream& out, const User& object) {
     out << object.email() << object.password()
-            << object.popHost() << object.smtpHost()
-            << object.popPort() << object.smtpPort();
+        << object.popHost() << object.smtpHost()
+        << object.popPort() << object.smtpPort();
     return out;
 }
 

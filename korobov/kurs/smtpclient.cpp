@@ -3,9 +3,9 @@
 // public
 
 SMTPClient::SMTPClient(const QString &email, const QString &password,
-        const QString &host, quint16 port, int timeout) :
-stream_(0), socket_(new QSslSocket(this)),
-email_(email), password_(password), host_(host), port_(port), timeout_(timeout) {
+                       const QString &host, quint16 port, int timeout) :
+    stream_(0), socket_(new QSslSocket(this)),
+    email_(email), password_(password), host_(host), port_(port), timeout_(timeout) {
     //    connect(socket_, SIGNAL(readyRead()), this, SLOT(readyRead()));
     connect(socket_, SIGNAL(connected()), this, SLOT(connected()));
     connect(socket_, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(errorReceived(QAbstractSocket::SocketError)));
@@ -16,7 +16,7 @@ email_(email), password_(password), host_(host), port_(port), timeout_(timeout) 
 // public
 
 SMTPClient::~SMTPClient() {
-    qDebug() << "destruct smtp client";
+    qDebug() << "~SMTPClient()";
     socket_->deleteLater();
     socket_->close();
     if (socket_) delete socket_;
@@ -26,7 +26,7 @@ SMTPClient::~SMTPClient() {
 // public
 
 bool SMTPClient::send(const QString &from, const QString &to,
-        const QString &subject, const QString &body, QStringList files) {
+                      const QString &subject, const QString &body, QStringList files) {
     message_ = "To: " + to + "\n";
     message_ += "From: " + from + "\n";
     message_.append("Subject: " + subject + "\n");
@@ -34,10 +34,10 @@ bool SMTPClient::send(const QString &from, const QString &to,
     message_.append("MIME-Version: 1.0\n");
 
     QString boundary = QString(QCryptographicHash::hash(QTime::currentTime()
-            .toString()
-            .toUtf8(),
-            QCryptographicHash::Md5)
-            .toHex()).left(10);
+                                                        .toString()
+                                                        .toUtf8(),
+                                                        QCryptographicHash::Md5)
+                               .toHex()).left(10);
 
     message_.append("Content-Type: multipart/mixed; boundary=" + boundary + "\n\n");
 
@@ -61,8 +61,8 @@ bool SMTPClient::send(const QString &from, const QString &to,
                 QByteArray bytes = file.readAll();
                 message_.append("--" + boundary + "\n");
                 message_.append("Content-Type: application/octet-stream\nContent-Disposition: attachment; filename="
-                        + QFileInfo(file.fileName()).fileName()
-                        + ";\nContent-Transfer-Encoding: base64\n\n");
+                                + QFileInfo(file.fileName()).fileName()
+                                + ";\nContent-Transfer-Encoding: base64\n\n");
                 message_.append(bytes.toBase64());
                 message_.append("\n");
             }
@@ -129,7 +129,7 @@ bool SMTPClient::readResponse(QString &response) {
 
 void SMTPClient::unexpectedResponse(QString response) {
     QMessageBox::warning(0, "Mail Client",
-            "Unexpected reply from SMTP server:\n\n" + response);
+                         "Unexpected reply from SMTP server:\n\n" + response);
     state_ = Close;
 }
 

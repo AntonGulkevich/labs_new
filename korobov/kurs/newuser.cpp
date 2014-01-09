@@ -2,9 +2,9 @@
 #include "ui_newuser.h"
 
 NewUser::NewUser(User **User, QWidget *parent) :
-QDialog(parent),
-User_(User),
-ui_(new Ui::NewUser) {
+    QDialog(parent),
+    User_(User),
+    ui_(new Ui::NewUser) {
     ui_->setupUi(this);
     ui_->emailLE->setText("redmine.dcti@gmail.com");
     ui_->passwordLE->setText("AdminRedmineDCTI");
@@ -15,7 +15,7 @@ ui_(new Ui::NewUser) {
 }
 
 NewUser::~NewUser() {
-    qDebug() << "destruct newuser";
+    qDebug() << "~NewUser()";
     delete ui_;
 }
 
@@ -23,8 +23,8 @@ NewUser::~NewUser() {
 
 void NewUser::on_okPB_clicked() {
     *User_ = new User(ui_->emailLE->text(), ui_->passwordLE->text(),
-            ui_->popHostLE->text(), ui_->smtpHostLE->text(),
-            ui_->popPortLE->text().toInt(), ui_->smtpPortLE->text().toInt());
+                      ui_->popHostLE->text(), ui_->smtpHostLE->text(),
+                      ui_->popPortLE->text().toInt(), ui_->smtpPortLE->text().toInt());
     if (Login::checkConnect(*User_)) {
         accept();
     }

@@ -8,7 +8,7 @@
 #include "pop3client.h"
 
 namespace Ui {
-    class NewUser;
+class NewUser;
 }
 
 class NewUser : public QDialog {
