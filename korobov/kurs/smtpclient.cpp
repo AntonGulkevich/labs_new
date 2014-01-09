@@ -42,19 +42,18 @@ bool SMTPClient::send(const QString &from, const QString &to,
     message_.append("Content-Type: multipart/mixed; boundary="+boundary+"\n\n");
 
     message_.append( "--"+boundary+"\n" );
-    message_.append( "Content-Type: text/plain\n\n" );
-    message_.append(body);
+    message_.append( "Content-Type: text/plain\nContent-Transfer-Encoding: base64\n\n");
+
+    QByteArray text(body.toStdString().c_str());
+    message_.append(text.toBase64());
+
     message_.append("\n\n");
 
-    if(!files.isEmpty())
-    {
-        foreach(QString filePath, files)
-        {
+    if(!files.isEmpty()) {
+        foreach(QString filePath, files) {
             QFile file(filePath);
-            if(file.exists())
-            {
-                if (!file.open(QIODevice::ReadOnly))
-                {
+            if(file.exists()) {
+                if (!file.open(QIODevice::ReadOnly)) {
                     QMessageBox::warning( 0, tr( "Qt Simple SMTP client" ), tr( "Couldn't open the file\n\n" )  );
                     return false;
                 }

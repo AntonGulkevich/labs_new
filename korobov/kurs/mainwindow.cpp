@@ -168,11 +168,11 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
         QString contentType, encodeType;
         QStringList lines = part.split("\r\n", QString::SkipEmptyParts);
 
-        qDebug() << "<<<<<";
-        for (auto l : lines) {
-            qDebug() << "[" << i << "]: " << l;
-        }
-        qDebug() << ">>>>>";
+//        qDebug() << "<<<<<";
+//        for (auto l : lines) {
+//            qDebug() << "[" << i << "]: " << l;
+//        }
+//        qDebug() << ">>>>>";
 
         contentType = lines[0].section("Content-Type: ", 1);
         qDebug() <<  "contentType: " << contentType;
@@ -188,12 +188,6 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
                         body.append(QByteArray(QByteArray::fromBase64(text)).data());
                     }
                 }
-            } else {
-                for (int i = 1; i < lines.size(); ++i) {
-                    if (lines[i] == ".") break;
-                    body.append(lines[i]);
-                }
-                qDebug() << "body: " << body;
             }
         } else if (contentType.startsWith("application/octet-stream")) {
             contentType = "file";
