@@ -1,8 +1,7 @@
 #include "messagewindow.h"
 
 MessageWindow::MessageWindow(modes mode, QWidget *parent) :
-    QDialog(parent), mode_(mode)
-{
+QDialog(parent), mode_(mode) {
     if (mode_ == write) {
         uiWM_ = new Ui::WriteMessage;
         uiRM_ = 0;
@@ -16,8 +15,7 @@ MessageWindow::MessageWindow(modes mode, QWidget *parent) :
     }
 }
 
-MessageWindow::~MessageWindow()
-{
+MessageWindow::~MessageWindow() {
     if (mode_ == write) {
         delete uiWM_;
     }

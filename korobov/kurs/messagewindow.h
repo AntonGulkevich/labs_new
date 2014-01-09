@@ -9,16 +9,18 @@
 #include "ui_readmessage.h"
 
 namespace Ui {
-class WriteMessage;
-class ReadMessage;
+    class WriteMessage;
+    class ReadMessage;
 }
 
-class MessageWindow : public QDialog, public Message
-{
+class MessageWindow : public QDialog, public Message {
+
     Q_OBJECT
 
 public:
-    enum modes { read, write };
+    enum modes {
+        read, write
+    };
     explicit MessageWindow(modes mode, QWidget *parent = 0);
     ~MessageWindow();
 private:

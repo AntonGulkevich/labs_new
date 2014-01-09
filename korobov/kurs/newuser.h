@@ -11,8 +11,7 @@ namespace Ui {
     class NewUser;
 }
 
-class NewUser : public QDialog
-{
+class NewUser : public QDialog {
     Q_OBJECT
 
 public:

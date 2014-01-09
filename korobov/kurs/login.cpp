@@ -2,17 +2,15 @@
 #include "ui_login.h"
 
 Login::Login(User **user, QWidget *parent) :
-    QDialog(parent),
-    ui_(new Ui::Login),
-    User_(user), userStorage_(new Storage< User >("user.dat"))
-{
+QDialog(parent),
+ui_(new Ui::Login),
+User_(user), userStorage_(new Storage< User >("user.dat")) {
     ui_->setupUi(this);
     userStorage_->importStorage();
     updateLW();
 }
 
-Login::~Login()
-{
+Login::~Login() {
     qDebug() << "destruct login";
     //    if (User_) delete *User_;
     if (userStorage_) delete userStorage_;
@@ -20,31 +18,31 @@ Login::~Login()
 }
 
 // public static
-bool Login::checkConnect(User *user)
-{
+
+bool Login::checkConnect(User *user) {
     // check POP3
     bool pop3 = false;
     POP3Client POP3(user->email(), user->password(),
-                    user->popHost(), user->popPort());
+            user->popHost(), user->popPort());
     if (POP3.init()) {
         if (POP3.login()) {
             qDebug() << "pop3 ok!";
             pop3 = true;
             POP3.quit();
         } else {
-            QMessageBox::critical(0,"Error", "Wrong Password");
+            QMessageBox::critical(0, "Error", "Wrong Password");
         }
     } else {
         QMessageBox::critical(0, "Error", "No connection to POP3 server!");
     }
 
-//    bool smtp = true;
-//    return pop3 && smtp;
+    bool smtp = true;
+    return pop3 && smtp;
 
     // check SMTP    readResponse(response);
-    bool smtp = false;
+    //    bool smtp = false;
     SMTPClient SMTP(user->email(), user->password(),
-                    user->smtpHost(), user->smtpPort());
+            user->smtpHost(), user->smtpPort());
     if (SMTP.init()) {
         if (SMTP.login()) {
             qDebug() << "smtp ok!";
@@ -62,8 +60,8 @@ bool Login::checkConnect(User *user)
 }
 
 // private slot
-void Login::on_newUserPB_clicked()
-{
+
+void Login::on_newUserPB_clicked() {
     NewUser newUser(User_, this);
     int exec = newUser.exec();
     if (exec == QDialog::Accepted) {
@@ -79,8 +77,8 @@ void Login::on_newUserPB_clicked()
 }
 
 // private slot
-void Login::on_delUserPB_clicked()
-{
+
+void Login::on_delUserPB_clicked() {
     int index = ui_->usersLW->currentIndex().row();
     qDebug() << index;
     if (index > -1) {
@@ -94,21 +92,21 @@ void Login::on_delUserPB_clicked()
 }
 
 // private slot
-void Login::on_loginPB_clicked()
-{
+
+void Login::on_loginPB_clicked() {
     if (ui_->usersLW->currentRow() >= 0) {
         login(ui_->usersLW->currentIndex().row());
     }
 }
 // private slot
-void Login::on_usersLW_doubleClicked(const QModelIndex &modelIndex)
-{
+
+void Login::on_usersLW_doubleClicked(const QModelIndex &modelIndex) {
     login(modelIndex.row());
 }
 
 // private
-void Login::login(int index)
-{
+
+void Login::login(int index) {
     if (index > -1) {
         if (*User_) delete *User_;
 
@@ -123,8 +121,8 @@ void Login::login(int index)
 
 
 // private
-void Login::updateLW()
-{
+
+void Login::updateLW() {
     ui_->usersLW->clear();
     QList<User> tmp;
     if (userStorage_->getObjects(tmp)) {
@@ -135,11 +133,11 @@ void Login::updateLW()
 }
 
 // private
-bool Login::checkPassword(int id)
-{
+
+bool Login::checkPassword(int id) {
     bool ok = false;
     QString obtainPassword = QInputDialog::getText(
-                this, "Input password", "Password", QLineEdit::Password, userStorage_->getObject(id).password(), &ok); // tmp!!!
+            this, "Input password", "Password", QLineEdit::Password, userStorage_->getObject(id).password(), &ok); // tmp!!!
     bool verify = (obtainPassword == userStorage_->getObject(id).password());
     if (ok && !verify) {
         QMessageBox::critical(this, "Error", "Wrong Password");

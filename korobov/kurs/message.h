@@ -5,8 +5,8 @@
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
-class Message
-{
+
+class Message {
 public:
     Message();
     Message(const QString &from, const QString &to,
@@ -40,7 +40,7 @@ private:
     bool read_;
 
 };
-QDataStream& operator<< (QDataStream& out, const Message& object);
-QDataStream& operator>> (QDataStream& in, Message& object);
+QDataStream& operator<<(QDataStream& out, const Message& object);
+QDataStream& operator>>(QDataStream& in, Message& object);
 
 #endif // MESSAGE_H

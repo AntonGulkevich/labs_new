@@ -1,11 +1,11 @@
 #include "pop3client.h"
 
 //public
+
 POP3Client::POP3Client(const QString &email, const QString &password,
-                       const QString &host, quint16 port, int timeout):
-    socket_(new QSslSocket(this)),
-    email_(email), password_(password), host_(host), port_(port), timeout_(timeout), state_(NotConnected)
-{
+        const QString &host, quint16 port, int timeout) :
+socket_(new QSslSocket(this)),
+email_(email), password_(password), host_(host), port_(port), timeout_(timeout), state_(NotConnected) {
     qDebug() << "POP3 client created";
     connect(socket_, SIGNAL(connected()), this, SLOT(connected()));
     connect(socket_, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(errorReceived(QAbstractSocket::SocketError)));
@@ -14,14 +14,14 @@ POP3Client::POP3Client(const QString &email, const QString &password,
 }
 
 // public
-POP3Client::~POP3Client()
-{
+
+POP3Client::~POP3Client() {
     if (socket_) delete socket_;
 }
 
 // publicgitgi
-bool POP3Client::init()
-{
+
+bool POP3Client::init() {
     if (state_ == Authorization) {
         return true;
     }
@@ -43,8 +43,8 @@ bool POP3Client::init()
     }
 }
 //public
-bool POP3Client::login()
-{
+
+bool POP3Client::login() {
     if (state_ == Transaction)
         return true;
 
@@ -57,19 +57,26 @@ bool POP3Client::login()
 }
 
 //public
-bool POP3Client::getMsgList(QStringList& uIdList)
+
+bool POP3Client::getMsgList(QList< QPair<QString, quint64> >& list)
+//bool POP3Client::getMsgList(QStringList& uIdList)
 {
     QString res = doCommand("LIST\r\n");
     qDebug() << res;
     if (res.startsWith("+OK")) {
-        QStringList lines = res.split("\r\n",QString::SkipEmptyParts);
+        QStringList lines = res.split("\r\n", QString::SkipEmptyParts);
         int i;
-        for (i = 1; i < lines.count();i++) {
+        for (i = 1; i < lines.count(); i++) {
             QStringList words = lines[i].split(' ', QString::SkipEmptyParts);
+            for (auto word : words) {
+                qDebug() << word;
+            }
             bool ok = true;
-            words[0].toInt(&ok);
+            words.value(0).toInt(&ok);
+            words.value(1).toInt(&ok);
+
             if (ok) {
-            uIdList.append(words[0]);
+                list.append(QPair<QString, quint64>(words[0], words[1].toInt()));
             }
         }
         return true;
@@ -79,11 +86,11 @@ bool POP3Client::getMsgList(QStringList& uIdList)
 }
 
 //public
-bool POP3Client::getMessageTop(QString msgId, int nbLines, QString& msgTop)
-{
-    QString res = doCommand("TOP "+msgId+" "+QString::number(nbLines)+"\r\n");
+
+bool POP3Client::getMessageTop(QString msgId, int nbLines, QString& msgTop) {
+    QString res = doCommand("TOP " + msgId + " " + QString::number(nbLines) + "\r\n");
     if (res.startsWith("+OK")) {
-        msgTop = res.section("\r\n",1);
+        msgTop = res.section("\r\n", 1);
         return true;
     } else {
         return false;
@@ -91,13 +98,12 @@ bool POP3Client::getMessageTop(QString msgId, int nbLines, QString& msgTop)
 }
 
 //public
-bool POP3Client::getMessage(QString msgId, QString& msg)
-{
-    QString res = doCommand("RETR " + msgId + "\r\n");
+
+bool POP3Client::getMessage(QString msgId, quint64 msgSize, QString& msg) {
+    QString res = doCommand("RETR " + msgId + "\r\n", msgSize);
     if (res.size() == 0)
         return false;
-    if (res.startsWith("+OK"))
-    {
+    if (res.startsWith("+OK")) {
         msg = res.section("\r\n", 1);
         return true;
     } else {
@@ -106,6 +112,7 @@ bool POP3Client::getMessage(QString msgId, QString& msg)
 }
 
 // public
+
 bool POP3Client::quit() {
     QString res = doCommand("QUIT\r\n");
     if (res.startsWith("+OK")) {
@@ -121,36 +128,45 @@ bool POP3Client::quit() {
 }
 
 //private
-QString POP3Client::doCommand(QString command)
-{
+
+QString POP3Client::doCommand(QString command, quint64 bytesAvailable) {
     QString response;
     qint64 writeResult = socket_->write(command.toUtf8());
     if (writeResult > 0 && !socket_->waitForBytesWritten(timeout_))
         return "";
-    if (!readResponse(response))
+    if (!readResponse(response, bytesAvailable))
         return "";
     return response;
 }
 
 //private
-bool POP3Client::readResponse(QString& response)
-{
+
+bool POP3Client::readResponse(QString& response, quint64 bytesAvailable) {
+
     bool complete = false;
     bool couldRead = socket_->waitForReadyRead(timeout_);
-    QString responseLine;
+    qDebug() << "available: " << socket_->bytesAvailable();
+
+    quint64 bytesRead = 0;
+
     do {
-        responseLine = socket_->readLine();
-        response += responseLine;
+        QByteArray all(socket_->readAll());
+        bytesRead += all.size();
+        response.append(all);
+        if (bytesRead < bytesAvailable) socket_->waitForReadyRead(100);
+    } while (bytesRead < bytesAvailable);
+
+    if (response.size() > 0) {
         complete = true;
-    } while (socket_->canReadLine());
+    }
 
     return couldRead && complete;
 }
 
 //private
-bool POP3Client::sendUser(QString& user)
-{
-    QString res = doCommand("USER "+user+"\r\n");
+
+bool POP3Client::sendUser(QString& user) {
+    QString res = doCommand("USER " + user + "\r\n");
     qDebug() << res;
     if (res.startsWith("+OK"))
         return true;
@@ -158,8 +174,8 @@ bool POP3Client::sendUser(QString& user)
         return false;
 }
 //private
-bool POP3Client::sendPasswd(QString& password)
-{
+
+bool POP3Client::sendPasswd(QString& password) {
     QString res = doCommand("PASS " + password + "\r\n");
     qDebug() << res;
     if (res.startsWith("+OK"))
@@ -169,25 +185,25 @@ bool POP3Client::sendPasswd(QString& password)
 }
 
 // private slot
-void POP3Client::stateChanged(QAbstractSocket::SocketState socketState)
-{
-    qDebug() <<"stateChanged " << socketState;
+
+void POP3Client::stateChanged(QAbstractSocket::SocketState socketState) {
+    qDebug() << "stateChanged " << socketState;
 }
 
 // private slot
-void POP3Client::errorReceived(QAbstractSocket::SocketError socketError)
-{
+
+void POP3Client::errorReceived(QAbstractSocket::SocketError socketError) {
     qDebug() << "error " << socketError;
 }
 
 // private slot
-void POP3Client::disconnected()
-{
-    qDebug() <<"disconneted";
-    qDebug() << "error "  << socket_->errorString();
+
+void POP3Client::disconnected() {
+    qDebug() << "disconneted";
+    qDebug() << "error " << socket_->errorString();
 }
 // private slot
-void POP3Client::connected()
-{
+
+void POP3Client::connected() {
     qDebug() << "Connected ";
 }

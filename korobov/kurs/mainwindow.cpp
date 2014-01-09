@@ -1,13 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 // public
+
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui_(new Ui::MainWindow),
-    Login_(),
-    User_(0),
-    popStorage_(0), smtpStorage_(0)
-{
+QMainWindow(parent),
+ui_(new Ui::MainWindow),
+Login_(),
+User_(0),
+popStorage_(0), smtpStorage_(0) {
     ui_->setupUi(this);
     show();
 
@@ -29,8 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 // public
-MainWindow::~MainWindow()
-{
+
+MainWindow::~MainWindow() {
     qDebug() << "~";
     if (Login_) delete Login_;
     if (User_) delete User_;
@@ -40,8 +40,8 @@ MainWindow::~MainWindow()
 }
 
 // private
-void MainWindow::closeEvent(QCloseEvent *event)
-{
+
+void MainWindow::closeEvent(QCloseEvent *event) {
     qDebug() << "close event";
     if (User_) {
         qDebug() << "export storages";
@@ -52,8 +52,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 // private
-void MainWindow::showTable(QTableWidget *tableWidget, Storage<Message> *storage, bool isTo)
-{
+
+void MainWindow::showTable(QTableWidget *tableWidget, Storage<Message> *storage, bool isTo) {
     for (int i = tableWidget->rowCount() - 1; i >= 0; --i)
         tableWidget->removeRow(i);
 
@@ -69,8 +69,8 @@ void MainWindow::showTable(QTableWidget *tableWidget, Storage<Message> *storage,
 }
 
 // private
-void MainWindow::showRecord(QTableWidget *tableWidget, Message *message, int index, bool isTo)
-{
+
+void MainWindow::showRecord(QTableWidget *tableWidget, Message *message, int index, bool isTo) {
     qDebug() << "show table";
 
     QFont bold;
@@ -105,8 +105,8 @@ void MainWindow::showRecord(QTableWidget *tableWidget, Message *message, int ind
 }
 
 // private
-Message MainWindow::parsePOP3Message(QString stringMessage)
-{
+
+Message MainWindow::parsePOP3Message(QString stringMessage) {
     QString to = User_->email();
     QString from, subj, body;
     QString boundary;
@@ -116,9 +116,10 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
 
     QStringList lines = stringMessage.split("\r\n");
     //    for (auto line = ;)
-    foreach (QString line, lines) {
+
+    foreach(QString line, lines) {
         if (line.startsWith("From: ")) {
-            to = line.section("From: ", 1);
+            from = line.section("From: ", 1);
         }
 
         if (line.startsWith("Subject: ")) {
@@ -146,15 +147,15 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
         }
 
         if (line.startsWith("Content-Type: ")) {
-//            qDebug() << "line::::" << line;
+            //            qDebug() << "line::::" << line;
             QRegExp b(".*; boundary=(.*)");
             if (b.indexIn(line) > -1) {
                 boundary = b.cap(1);
             }
         }
 
-        if (line.startsWith("Message-Id: ")) {
-            messageId = line.section("Message-Id: ", 1);
+        if (line.startsWith("Message-ID: ")) {
+            messageId = line.section("Message-ID: ", 1);
         }
     }
 
@@ -168,42 +169,68 @@ Message MainWindow::parsePOP3Message(QString stringMessage)
         QString contentType, encodeType;
         QStringList lines = part.split("\r\n", QString::SkipEmptyParts);
 
-//        qDebug() << "<<<<<";
-//        for (auto l : lines) {
-//            qDebug() << "[" << i << "]: " << l;
-//        }
-//        qDebug() << ">>>>>";
+        //        qDebug() << "<<<<<";
+        //        for (auto l : lines) {
+        //            qDebug() << "[" << i << "]: " << l;
+        //        }
+        //        qDebug() << ">>>>>";
 
         contentType = lines[0].section("Content-Type: ", 1);
-        qDebug() <<  "contentType: " << contentType;
 
         if (contentType.startsWith("text/plain")) {
             contentType = "text";
-            if (lines[1].startsWith("Content-Transfer-Encoding: ")) {
-                encodeType = lines[1].section("Content-Transfer-Encoding: ", 1);
-                qDebug() << "encode type: " << encodeType;
-                if (encodeType == "base64") {
-                    for (int i = 2; i < lines.size(); ++i) {
-                        QByteArray text(lines[i].toStdString().c_str());
-                        body.append(QByteArray(QByteArray::fromBase64(text)).data());
-                    }
+            qDebug() << contentType;
+
+            encodeType = lines[1].section("Content-Transfer-Encoding: ", 1);
+            if (encodeType == "base64") {
+                for (int i = 2; i < lines.size(); ++i) {
+                    QByteArray text(lines[i].toStdString().c_str());
+                    body.append(QByteArray(QByteArray::fromBase64(text)).data());
                 }
             }
-        } else if (contentType.startsWith("application/octet-stream")) {
+        }
+        else if (contentType.startsWith("application/octet-stream")) {
             contentType = "file";
-        } else {
+            qDebug() << contentType;
+            QString filename = lines[1].section("filename=", 1);
+            filename.chop(1);
+            files.append(filename);
+
+            encodeType = lines[2].section("Content-Transfer-Encoding: ", 1);
+            if (encodeType == "base64") {
+                QDir filesPath("/home/dn/mailclient/files");
+                QDir userPath(filesPath.absolutePath() + "/" + to);
+
+                if (!userPath.exists()) {
+                    qDebug() << "try to create dir";
+                    filesPath.mkdir(to);
+                }
+                QFile saveFile(userPath.absolutePath() + "/" + messageId + "/" + filename);
+                userPath.mkdir(messageId);
+                saveFile.open(QIODevice::WriteOnly);
+
+                for (int i = 3; i < lines.size(); ++i) {
+                    QByteArray data(lines[i].toStdString().c_str());
+                    saveFile.write(QByteArray::fromBase64(data));
+                }
+
+                saveFile.close();
+            }
+
+        }
+        else {
             continue;
         }
     }
 
-    Message readMessage(from, User_->email(), subj, body, QStringList(), datetime, messageId, false);
+    Message readMessage(from, to, subj, body, files, datetime, messageId, false);
     qDebug() << readMessage.id();
     return readMessage;
 }
 
 // private slot
-void MainWindow::startLogin()
-{
+
+void MainWindow::startLogin() {
     Login_ = new Login(&User_, this);
     Login_->setModal(true);
     int code = Login_->exec();
@@ -227,29 +254,32 @@ void MainWindow::startLogin()
 }
 
 // private slots
-void MainWindow::on_actionNew_Message_triggered()
-{
+
+void MainWindow::on_actionNew_Message_triggered() {
     WriteMessage *writeMessage = new WriteMessage(User_, smtpStorage_);
     if (writeMessage->exec() == QDialog::Accepted) {
         showTable(ui_->smtpTW, smtpStorage_);
     }
 }
 // private slots
-void MainWindow::on_actionGet_Mail_triggered()
-{
-    POP3Client POP3 ((User_)->email(), (User_)->password(),
-                     (User_)->popHost(), (User_)->popPort());
-    QStringList uIdList;
+
+void MainWindow::on_actionGet_Mail_triggered() {
+    POP3Client POP3((User_)->email(), (User_)->password(),
+            (User_)->popHost(), (User_)->popPort());
+    QList< QPair<QString, quint64> > list;
     if (POP3.init()) {
         if (POP3.login()) {
-            if (POP3.getMsgList(uIdList)) {
+            if (POP3.getMsgList(list)) {
                 QString message;
-                foreach (QString str, uIdList) {
-                    POP3.getMessage(str, message);
+                for (QPair<QString, quint64> node : list) {
+                    POP3.getMessage(node.first, node.second, message);
+                    qDebug() << "[[[[" << message << "]]]]";
                     if (!message.isEmpty()) {
                         Message retr(parsePOP3Message(message));
 
-                        auto func = [](Message& a, Message& b) { return (a.id() == b.id()); };
+                        auto func = [](Message& a, Message & b) {
+                            return (a.id() == b.id());
+                        };
                         if (!popStorage_->isObject(retr, func)) {
                             popStorage_->add(retr);
                         }
@@ -262,8 +292,8 @@ void MainWindow::on_actionGet_Mail_triggered()
 }
 
 // private slots
-void MainWindow::on_actionDelete_triggered()
-{
+
+void MainWindow::on_actionDelete_triggered() {
 
 }
 
@@ -275,13 +305,13 @@ bool istest(const Message &m) {
 }
 
 // private slots
-void MainWindow::on_actionAbout_triggered()
-{
+
+void MainWindow::on_actionAbout_triggered() {
     QMessageBox::warning(0, "About Mail Client",
-                         "<h2>Mail Client 0.8.3-2</h2>"
-                         "<p>Copyright &copy; 2013 Nikonov Danil from SP-91."
-                         "<p>Mail Client is a small application that "
-                         "demonstrates operations with POP3 and SMTP servers.");
+            "<h2>Mail Client 0.8.3-2</h2>"
+            "<p>Copyright &copy; 2013 Nikonov Danil from SP-91."
+            "<p>Mail Client is a small application that "
+            "demonstrates operations with POP3 and SMTP servers.");
     QList<Message> tmp;
     smtpStorage_->getObjects(tmp, istest);
 
@@ -290,9 +320,7 @@ void MainWindow::on_actionAbout_triggered()
     }
 }
 
-
-void MainWindow::on_smtpTW_doubleClicked(const QModelIndex &index)
-{
+void MainWindow::on_smtpTW_doubleClicked(const QModelIndex &index) {
     int i = index.row();
     Message *m = &(smtpStorage_->getObject(i));
     ReadMessage *readMessage = new ReadMessage(m, this);
@@ -303,8 +331,7 @@ void MainWindow::on_smtpTW_doubleClicked(const QModelIndex &index)
 
 }
 
-void MainWindow::on_popTW_doubleClicked(const QModelIndex &index)
-{
+void MainWindow::on_popTW_doubleClicked(const QModelIndex &index) {
     int i = index.row();
     Message *m = &(popStorage_->getObject(i));
     ReadMessage *readMessage = new ReadMessage(m, this);

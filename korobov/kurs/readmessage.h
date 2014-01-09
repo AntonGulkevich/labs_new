@@ -5,11 +5,10 @@
 #include <QDebug>
 #include "message.h"
 namespace Ui {
-class ReadMessage;
+    class ReadMessage;
 }
 
-class ReadMessage : public QDialog
-{
+class ReadMessage : public QDialog {
     Q_OBJECT
 
 public:

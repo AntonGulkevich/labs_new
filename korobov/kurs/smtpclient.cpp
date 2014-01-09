@@ -1,11 +1,11 @@
 #include "smtpclient.h"
 
 // public
+
 SMTPClient::SMTPClient(const QString &email, const QString &password,
-                       const QString &host, quint16 port, int timeout):
-    stream_(0), socket_(new QSslSocket(this)),
-    email_(email), password_(password), host_(host), port_(port), timeout_(timeout)
-{
+        const QString &host, quint16 port, int timeout) :
+stream_(0), socket_(new QSslSocket(this)),
+email_(email), password_(password), host_(host), port_(port), timeout_(timeout) {
     //    connect(socket_, SIGNAL(readyRead()), this, SLOT(readyRead()));
     connect(socket_, SIGNAL(connected()), this, SLOT(connected()));
     connect(socket_, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(errorReceived(QAbstractSocket::SocketError)));
@@ -14,8 +14,8 @@ SMTPClient::SMTPClient(const QString &email, const QString &password,
 
 }
 // public
-SMTPClient::~SMTPClient()
-{
+
+SMTPClient::~SMTPClient() {
     qDebug() << "destruct smtp client";
     socket_->deleteLater();
     socket_->close();
@@ -24,53 +24,54 @@ SMTPClient::~SMTPClient()
 }
 
 // public
+
 bool SMTPClient::send(const QString &from, const QString &to,
-                      const QString &subject, const QString &body,  QStringList files)
-{
+        const QString &subject, const QString &body, QStringList files) {
     message_ = "To: " + to + "\n";
-    message_+= "From: " + from + "\n";
+    message_ += "From: " + from + "\n";
     message_.append("Subject: " + subject + "\n");
 
     message_.append("MIME-Version: 1.0\n");
 
     QString boundary = QString(QCryptographicHash::hash(QTime::currentTime()
-                                                        .toString()
-                                                        .toUtf8(),
-                                                        QCryptographicHash::Md5)
-                               .toHex()).left(10);
+            .toString()
+            .toUtf8(),
+            QCryptographicHash::Md5)
+            .toHex()).left(10);
 
-    message_.append("Content-Type: multipart/mixed; boundary="+boundary+"\n\n");
+    message_.append("Content-Type: multipart/mixed; boundary=" + boundary + "\n\n");
 
-    message_.append( "--"+boundary+"\n" );
-    message_.append( "Content-Type: text/plain\nContent-Transfer-Encoding: base64\n\n");
+    message_.append("--" + boundary + "\n");
+    message_.append("Content-Type: text/plain\nContent-Transfer-Encoding: base64\n\n");
 
     QByteArray text(body.toStdString().c_str());
     message_.append(text.toBase64());
 
     message_.append("\n\n");
 
-    if(!files.isEmpty()) {
+    if (!files.isEmpty()) {
+
         foreach(QString filePath, files) {
             QFile file(filePath);
-            if(file.exists()) {
+            if (file.exists()) {
                 if (!file.open(QIODevice::ReadOnly)) {
-                    QMessageBox::warning( 0, tr( "Qt Simple SMTP client" ), tr( "Couldn't open the file\n\n" )  );
+                    QMessageBox::warning(0, tr("Qt Simple SMTP client"), tr("Couldn't open the file\n\n"));
                     return false;
                 }
                 QByteArray bytes = file.readAll();
-                message_.append("--"+boundary+"\n" );
+                message_.append("--" + boundary + "\n");
                 message_.append("Content-Type: application/octet-stream\nContent-Disposition: attachment; filename="
-                                + QFileInfo(file.fileName()).fileName()
-                                + ";\nContent-Transfer-Encoding: base64\n\n" );
+                        + QFileInfo(file.fileName()).fileName()
+                        + ";\nContent-Transfer-Encoding: base64\n\n");
                 message_.append(bytes.toBase64());
                 message_.append("\n");
             }
         }
     }
 
-    message_.append( "--"+boundary+"--\n" );
-    message_.replace(QString::fromLatin1( "\n" ), QString::fromLatin1( "\r\n" ));
-    message_.replace(QString::fromLatin1( "\r\n.\r\n" ), QString::fromLatin1( "\r\n..\r\n" ));
+    message_.append("--" + boundary + "--\n");
+    message_.replace(QString::fromLatin1("\n"), QString::fromLatin1("\r\n"));
+    message_.replace(QString::fromLatin1("\r\n.\r\n"), QString::fromLatin1("\r\n..\r\n"));
 
     from_ = from;
     rcpt_ = to;
@@ -81,28 +82,28 @@ bool SMTPClient::send(const QString &from, const QString &to,
 }
 
 // public
-bool SMTPClient::init()
-{
-    return  (init_msg() && handshake_msg());
+
+bool SMTPClient::init() {
+    return (init_msg() && handshake_msg());
 }
 
 // public
-bool SMTPClient::login()
-{
+
+bool SMTPClient::login() {
     return (auth_msg() && user_msg() && pass_msg());
 }
 
 // public
-bool SMTPClient::quit()
-{
+
+bool SMTPClient::quit() {
     return quit_msg();
 }
 
 
 // private
-QString SMTPClient::doCommand(QString command)
-{
-    *stream_<< "HELO" << "\r\n";
+
+QString SMTPClient::doCommand(QString command) {
+    *stream_ << "HELO" << "\r\n";
     stream_->flush();
     QString response;
     if (!readResponse(response))
@@ -111,8 +112,8 @@ QString SMTPClient::doCommand(QString command)
 }
 
 // private
-bool SMTPClient::readResponse(QString &response)
-{
+
+bool SMTPClient::readResponse(QString &response) {
     bool complete = false;
     bool couldRead = socket_->waitForReadyRead(timeout_);
     QString responseLine;
@@ -126,16 +127,15 @@ bool SMTPClient::readResponse(QString &response)
     return couldRead;
 }
 
-void SMTPClient::unexpectedResponse(QString response)
-{
+void SMTPClient::unexpectedResponse(QString response) {
     QMessageBox::warning(0, "Mail Client",
-                         "Unexpected reply from SMTP server:\n\n" + response);
+            "Unexpected reply from SMTP server:\n\n" + response);
     state_ = Close;
 }
 
 // private
-bool SMTPClient::init_msg()
-{
+
+bool SMTPClient::init_msg() {
     qDebug() << "init msg()";
     state_ = Init;
     qDebug() << "connect to: " << host_ << ":" << port_;
@@ -152,7 +152,7 @@ bool SMTPClient::init_msg()
         QString response;
         if (readResponse(response) && response == "220") {
             qDebug() << "HELO";
-            *stream_ << "EHLO" <<"\r\n";
+            *stream_ << "EHLO" << "\r\n";
             stream_->flush();
             state_ = HandShake;
             return true;
@@ -164,23 +164,22 @@ bool SMTPClient::init_msg()
 }
 
 // private
-bool SMTPClient::handshake_msg()
-{
+
+bool SMTPClient::handshake_msg() {
     qDebug() << "handshake msg()";
     if (state_ == HandShake) {
         QString response;
-        if (readResponse(response) && response == "250")
-        {
+        if (readResponse(response) && response == "250") {
             if (socket_->mode() == 0) {
                 qDebug() << "HELO ENC";
                 socket_->startServerEncryption();
-                if(!socket_->waitForEncrypted(timeout_)) {
+                if (!socket_->waitForEncrypted(timeout_)) {
                     qDebug() << socket_->errorString();
                     state_ = Close;
                     return false;
                 }
             }
-            *stream_<< "HELO" << "\r\n";
+            *stream_ << "HELO" << "\r\n";
             stream_->flush();
             state_ = Auth;
             return true;
@@ -192,8 +191,8 @@ bool SMTPClient::handshake_msg()
 }
 
 // private
-bool SMTPClient::auth_msg()
-{
+
+bool SMTPClient::auth_msg() {
     qDebug() << "auth msg()";
     if (state_ == Auth) {
         qDebug() << "wait read response";
@@ -212,14 +211,14 @@ bool SMTPClient::auth_msg()
 }
 
 // private
-bool SMTPClient::user_msg()
-{
+
+bool SMTPClient::user_msg() {
     qDebug() << "user msg()";
     if (state_ == User) {
         QString response;
         if (readResponse(response) && response == "334") {
             qDebug() << "EMAIL";
-            *stream_ << QByteArray().append(email_).toBase64()  << "\r\n";
+            *stream_ << QByteArray().append(email_).toBase64() << "\r\n";
             stream_->flush();
             state_ = Pass;
             return true;
@@ -231,8 +230,8 @@ bool SMTPClient::user_msg()
 }
 
 // private
-bool SMTPClient::pass_msg()
-{
+
+bool SMTPClient::pass_msg() {
     qDebug() << "pass msg()";
     if (state_ == Pass) {
         QString response;
@@ -248,8 +247,8 @@ bool SMTPClient::pass_msg()
 }
 
 // private
-bool SMTPClient::mail_msg()
-{
+
+bool SMTPClient::mail_msg() {
     qDebug() << "mail msg()";
     if (state_ == Mail) {
         QString response;
@@ -268,8 +267,8 @@ bool SMTPClient::mail_msg()
 }
 
 // private
-bool SMTPClient::rcpt_msg()
-{
+
+bool SMTPClient::rcpt_msg() {
     qDebug() << "rcpt msg()";
     if (state_ == Rcpt) {
         QString response;
@@ -286,8 +285,8 @@ bool SMTPClient::rcpt_msg()
 }
 
 // private
-bool SMTPClient::data_msg()
-{
+
+bool SMTPClient::data_msg() {
     qDebug() << "data msg()";
     if (state_ == Data) {
         QString response;
@@ -304,8 +303,8 @@ bool SMTPClient::data_msg()
 }
 
 // private
-bool SMTPClient::body_msg()
-{
+
+bool SMTPClient::body_msg() {
     qDebug() << "body msg";
     if (state_ == Body) {
         QString response;
@@ -322,8 +321,8 @@ bool SMTPClient::body_msg()
 }
 
 // private
-bool SMTPClient::quit_msg()
-{
+
+bool SMTPClient::quit_msg() {
     qDebug() << "quit message";
     if (state_ == Quit) {
         QString response;
@@ -339,27 +338,27 @@ bool SMTPClient::quit_msg()
     return false;
 }
 // private slot
-void SMTPClient::stateChanged(QAbstractSocket::SocketState socketState)
-{
-    qDebug() <<"stateChanged " << socketState;
+
+void SMTPClient::stateChanged(QAbstractSocket::SocketState socketState) {
+    qDebug() << "stateChanged " << socketState;
 }
 
 // private slot
-void SMTPClient::errorReceived(QAbstractSocket::SocketError socketError)
-{
+
+void SMTPClient::errorReceived(QAbstractSocket::SocketError socketError) {
     qDebug() << "error " << socketError;
 }
 
 // private slot
-void SMTPClient::disconnected()
-{
-    qDebug() <<"disconneted";
-    qDebug() << "error "  << socket_->errorString();
+
+void SMTPClient::disconnected() {
+    qDebug() << "disconneted";
+    qDebug() << "error " << socket_->errorString();
 }
 
 // private slot
-void SMTPClient::connected()
-{
+
+void SMTPClient::connected() {
     qDebug() << "Connected ";
 }
 
@@ -480,4 +479,4 @@ void SMTPClient::readyRead()
     }
     response_ = "";
 }
-*/
+ */

@@ -9,20 +9,19 @@
 #include <QFile>
 #include <QFileInfo>
 
-class POP3Client : public QObject
-{
+class POP3Client : public QObject {
     Q_OBJECT
 public:
     POP3Client(const QString &email, const QString &password,
-               const QString &host, quint16 port, int timeout = 30000);
+            const QString &host, quint16 port, int timeout = 30000);
     ~POP3Client();
 
     bool init();
     bool login();
-    bool getMsgList(QStringList& uIdList);
-//    bool getMsgList(QString msgId, QPair<QString,int>& uIdList);
+    bool getMsgList(QList< QPair<QString, quint64> >& list);
+    //    bool getMsgList(QString msgId, QPair<QString,int>& uIdList);
     bool getMessageTop(QString msgId, int nbLines, QString& msgTop);
-    bool getMessage(QString msgId, QString& msg);
+    bool getMessage(QString msgId, quint64 msgSize, QString& msg);
     bool quit();
 
 signals:
@@ -44,8 +43,8 @@ private:
     };
 
     int state_;
-    QString doCommand(QString command);
-    bool readResponse(QString& response);
+    QString doCommand(QString command, quint64 bytesAvailable = 0);
+    bool readResponse(QString& response, quint64 bytesAvailable = 0);
     bool sendUser(QString& user);
     bool sendPasswd(QString& password);
 

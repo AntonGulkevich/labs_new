@@ -9,11 +9,10 @@
 #include "storage.h"
 
 namespace Ui {
-class WriteMessage;
+    class WriteMessage;
 }
 
-class WriteMessage : public QDialog
-{
+class WriteMessage : public QDialog {
     Q_OBJECT
 
 public:

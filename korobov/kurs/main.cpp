@@ -4,11 +4,10 @@
 
 //#include "storage.h"
 //#include "user.h"
-#include <QRegExp>
 #include <QDebug>
+#include <QByteArray>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
     MainWindow w;
     return a.exec();
