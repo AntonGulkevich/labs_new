@@ -35,11 +35,11 @@ bool Login::checkConnect(User *user) {
         QMessageBox::critical(0, "Error", "No connection to POP3 server!");
     }
 
-    bool smtp = true;
-    return pop3 && smtp;
+//    bool smtp = true;
+//    return pop3 && smtp;
 
     // check SMTP    readResponse(response);
-    //    bool smtp = false;
+    bool smtp = false;
     SMTPClient SMTP(user->email(), user->password(),
                     user->smtpHost(), user->smtpPort());
     if (SMTP.init()) {

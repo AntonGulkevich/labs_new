@@ -2,6 +2,8 @@
 #define DIALOG_H
 
 #include <QDialog>
+#include <QModelIndex>
+#include "message.h"
 
 namespace Ui {
 class Dialog;
@@ -17,6 +19,9 @@ public:
     
 private:
     Ui::Dialog *ui;
+    QList< QPair<quint64, quint64> > list_;
+private slots:
+    void showMessage(QModelIndex index);
 };
 
 #endif // DIALOG_H

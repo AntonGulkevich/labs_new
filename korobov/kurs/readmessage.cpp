@@ -12,7 +12,7 @@ ReadMessage::ReadMessage(Message *message, QWidget *parent) :
 
     QString attach = "";
     for (QString str : message->files()) {
-        attach.append(str);
+        attach.append(str + "; ");
     }
     ui_->attachLE->setText(attach);
     message->read(true);

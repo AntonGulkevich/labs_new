@@ -98,7 +98,7 @@
      <x>0</x>
      <y>0</y>
      <width>834</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMail">
@@ -113,16 +113,15 @@
      <string>About</string>
     </property>
     <addaction name="actionAbout"/>
-    <addaction name="actionExample"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
+   <widget class="QMenu" name="menuDelete">
     <property name="title">
      <string>Edit</string>
     </property>
     <addaction name="actionDelete"/>
    </widget>
    <addaction name="menuMail"/>
-   <addaction name="menuEdit"/>
+   <addaction name="menuDelete"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -141,7 +140,7 @@
   </action>
   <action name="actionGet_Mail">
    <property name="text">
-    <string>Get Maiil</string>
+    <string>Get Mail</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -149,14 +148,14 @@
     <string>About</string>
    </property>
   </action>
-  <action name="actionDelete">
-   <property name="text">
-    <string>Delete</string>
-   </property>
-  </action>
   <action name="actionExample">
    <property name="text">
     <string>Example</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="text">
+    <string>Delete</string>
    </property>
   </action>
  </widget>

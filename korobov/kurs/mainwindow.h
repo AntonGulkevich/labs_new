@@ -44,10 +44,10 @@ private slots:
     void startLogin();
     void on_actionNew_Message_triggered();
     void on_actionGet_Mail_triggered();
-    void on_actionDelete_triggered();
     void on_actionAbout_triggered();
     void on_smtpTW_doubleClicked(const QModelIndex &index);
     void on_popTW_doubleClicked(const QModelIndex &index);
+    void on_actionDelete_triggered();
 };
 
 #endif // MAINWINDOW_H

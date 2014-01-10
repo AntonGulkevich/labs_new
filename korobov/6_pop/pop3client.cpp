@@ -57,7 +57,7 @@ bool POP3Client::login() {
 
 //public
 
-bool POP3Client::getMsgList(QList< QPair<QString, quint64> >& list)
+bool POP3Client::getMsgList(QList< QPair<quint64, quint64> >& list)
 {
     QString res = doCommand("LIST\r\n");
     qDebug() << res;
@@ -74,7 +74,7 @@ bool POP3Client::getMsgList(QList< QPair<QString, quint64> >& list)
             words.value(1).toInt(&ok);
 
             if (ok) {
-                list.append(QPair<QString, quint64>(words[0], words[1].toInt()));
+                list.append(QPair<quint64, quint64>(words[0].toInt(), words[1].toInt()));
             }
         }
         return true;
@@ -97,8 +97,8 @@ bool POP3Client::getMessageTop(QString msgId, int nbLines, QString& msgTop) {
 
 //public
 
-bool POP3Client::getMessage(QString msgId, quint64 msgSize, QString& msg) {
-    QString res = doCommand("RETR " + msgId + "\r\n", msgSize);
+bool POP3Client::getMessage(quint64 msgId, quint64 msgSize, QString& msg) {
+    QString res = doCommand("RETR " + QString::number(msgId) + "\r\n", msgSize);
     if (res.size() == 0)
         return false;
     if (res.startsWith("+OK")) {

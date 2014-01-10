@@ -274,19 +274,6 @@ void MainWindow::on_actionGet_Mail_triggered() {
 
 // private slots
 
-void MainWindow::on_actionDelete_triggered() {
-
-}
-
-bool istest(const Message &m) {
-    if (m.subj() == "test")
-        return true;
-    else
-        return false;
-}
-
-// private slots
-
 void MainWindow::on_actionAbout_triggered() {
     QMessageBox::warning(0, "About Mail Client",
                          "<h2>Mail Client 0.8.3-2</h2>"
@@ -316,3 +303,30 @@ void MainWindow::on_popTW_doubleClicked(const QModelIndex &index) {
     }
 }
 
+
+void MainWindow::on_actionDelete_triggered()
+{
+    QTableWidget *tables[2] = {ui_->popTW, ui_->smtpTW};
+    Storage<Message> *storages[2] = {popStorage_, smtpStorage_};
+
+    int tab = ui_->tabWidget->currentIndex();
+    QTableWidget *table = tables[tab];
+    Storage<Message> *storage = storages[tab];
+
+    int row = table->currentRow();
+    storage->remove(row);
+    showTable(table, storage);
+
+    if (tab == 0) { // POP3 only
+        POP3Client POP3((User_)->email(), (User_)->password(),
+                        (User_)->popHost(), (User_)->popPort());
+        if (POP3.init()) {
+            if (POP3.login()) {
+                if (POP3.removeMessage(QString::number(row + 1))) {
+                    POP3.quit();
+                }
+
+            }
+        }
+    }
+}

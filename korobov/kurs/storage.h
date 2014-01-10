@@ -20,9 +20,9 @@ public:
     void importStorage();
     void exportStorage();
     void add(T object);
-    void remove(int id);
+    void remove(int index);
     int size() const;
-    T& getObject(int id);
+    T& getObject(int index);
     bool isObject(T& orig, bool (*callback)(T&, T&));
     bool getObjects(QList<T> &list);
     bool getObjects(QList<T> &list, bool (*callback)(const T&));
@@ -84,8 +84,8 @@ void Storage<T>::add(T object) {
 // public
 
 template <class T>
-void Storage<T>::remove(int id) {
-    container_->removeAt(id);
+void Storage<T>::remove(int index) {
+    container_->removeAt(index);
 }
 
 // public
@@ -98,8 +98,8 @@ int Storage<T>::size() const {
 // public
 
 template <class T>
-T& Storage<T>::getObject(int id) {
-    return (*container_)[id];
+T& Storage<T>::getObject(int index) {
+    return (*container_)[index];
 }
 
 //public

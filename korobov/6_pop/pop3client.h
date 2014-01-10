@@ -18,10 +18,10 @@ public:
 
     bool init();
     bool login();
-    bool getMsgList(QList< QPair<QString, quint64> >& list);
+    bool getMsgList(QList< QPair<quint64, quint64> >& list);
     //    bool getMsgList(QString msgId, QPair<QString,int>& uIdList);
     bool getMessageTop(QString msgId, int nbLines, QString& msgTop);
-    bool getMessage(QString msgId, quint64 msgSize, QString& msg);
+    bool getMessage(quint64 msgId, quint64 msgSize, QString& msg);
     bool removeMessage(QString msgId);
     bool quit();
 
