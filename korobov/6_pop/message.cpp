@@ -5,7 +5,7 @@ Message::Message(int index, int size, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Message)
 {
-    POP3Client POP3("redmine.dcti@gmail.com", "AdminRedmineDCTI",
+    POP3Client POP3("redmine.dcti@gmail.com", "",
                     "pop.googlemail.com", 995);
 
     ui->setupUi(this);
