@@ -7,7 +7,7 @@ NewUser::NewUser(User **User, QWidget *parent) :
     ui_(new Ui::NewUser) {
     ui_->setupUi(this);
     ui_->emailLE->setText("redmine.dcti@gmail.com");
-    ui_->passwordLE->setText("AdminRedmineDCTI");
+    ui_->passwordLE->setText("");
     ui_->smtpHostLE->setText("smtp.googlemail.com");
     ui_->smtpPortLE->setText("465");
     ui_->popHostLE->setText("pop.googlemail.com");
